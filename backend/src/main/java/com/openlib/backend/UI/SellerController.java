@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -22,6 +23,8 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 @Component
@@ -34,6 +37,7 @@ public class SellerController implements Initializable {
     @FXML private TableColumn<String[], String> colCategory;
     @FXML private TableColumn<String[], String> colIsbn;
     @FXML private TableColumn<String[], String> colDate;
+    @FXML private TableColumn<String[], String> colActions;
     @FXML private Label totalBooksLabel;
 
     // ── Tab Publicar nuevo
@@ -58,44 +62,80 @@ public class SellerController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Categorías disponibles
         categoryCombo.setItems(FXCollections.observableArrayList(
-                "Programación", "Ciencias", "Matemáticas",
-                "Diseño", "Negocios", "Historia", "Literatura", "Otros"
+            "Programación", "Ciencias", "Matemáticas",
+            "Diseño", "Negocios", "Historia", "Literatura", "Otros"
         ));
 
-        // Configurar columnas de la tabla
+        // Mostrar nombre/email del seller en sesión
+        if (!SessionManager.getEmail().isEmpty()) {
+            sellerNameLabel.setText(SessionManager.getEmail());
+        }
+
+        configurarColumnas();
+        cargarMisLibros();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Columnas de la tabla
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void configurarColumnas() {
         colTitle.setCellValueFactory(data    -> new SimpleStringProperty(data.getValue()[0]));
         colAuthor.setCellValueFactory(data   -> new SimpleStringProperty(data.getValue()[1]));
         colCategory.setCellValueFactory(data -> new SimpleStringProperty(data.getValue()[2]));
         colIsbn.setCellValueFactory(data     -> new SimpleStringProperty(data.getValue()[3]));
         colDate.setCellValueFactory(data     -> new SimpleStringProperty(data.getValue()[4]));
 
-        cargarMisLibros();
+        // Columna de acciones: botón Eliminar
+        colActions.setCellFactory(col -> new TableCell<>() {
+            private final Button btnEliminar = new Button("Eliminar");
+            {
+                btnEliminar.setStyle(
+                    "-fx-background-color: #cf667933; -fx-text-fill: #cf6679;" +
+                    "-fx-background-radius: 6; -fx-padding: 4 10; -fx-cursor: hand;"
+                );
+                btnEliminar.setOnAction(e -> {
+                    String[] row = getTableView().getItems().get(getIndex());
+                    confirmarEliminar(row[3], row[0]); // isbn, título
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btnEliminar);
+            }
+        });
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Carga de libros del seller
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void cargarMisLibros() {
         new Thread(() -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/books/my"))
-                        .GET()
-                        .build();
+                    .uri(URI.create("http://localhost:8080/api/books/my"))
+                    .header("Authorization", SessionManager.bearerHeader())
+                    .GET()
+                    .build();
 
                 HttpResponse<String> response = httpClient.send(
-                        request, HttpResponse.BodyHandlers.ofString()
+                    request, HttpResponse.BodyHandlers.ofString()
                 );
 
-                Platform.runLater(() -> {
-                    // TODO: parsear JSON de respuesta
-                    // Por ahora datos de ejemplo
-                    ObservableList<String[]> data = FXCollections.observableArrayList(
-                        new String[]{"Clean Code", "Robert C. Martin", "Programación", "978-01-36", "20/04/2026"},
-                        new String[]{"Refactoring", "Martin Fowler", "Programación", "978-02-47", "15/04/2026"}
-                    );
-                    booksTable.setItems(data);
-                    totalBooksLabel.setText(data.size() + " libros publicados");
-                });
+                if (response.statusCode() == 200) {
+                    List<String[]> libros = parsearLibros(response.body());
+                    Platform.runLater(() -> {
+                        ObservableList<String[]> data = FXCollections.observableArrayList(libros);
+                        booksTable.setItems(data);
+                        totalBooksLabel.setText(data.size() + " libros publicados");
+                    });
+                } else {
+                    Platform.runLater(() -> totalBooksLabel.setText("No se pudo cargar tus libros."));
+                }
 
             } catch (Exception e) {
                 Platform.runLater(() -> totalBooksLabel.setText("Sin conexión al servidor"));
@@ -103,17 +143,19 @@ public class SellerController implements Initializable {
         }).start();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Publicar nuevo libro
+    // ─────────────────────────────────────────────────────────────────────────
+
     @FXML
     private void selectPDF() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar archivo PDF");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf")
+            new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf")
         );
-
         Stage stage = (Stage) filePathField.getScene().getWindow();
         selectedFile = fileChooser.showOpenDialog(stage);
-
         if (selectedFile != null) {
             filePathField.setText(selectedFile.getAbsolutePath());
         }
@@ -152,18 +194,20 @@ public class SellerController implements Initializable {
                 String body = String.format(
                     "{\"title\":\"%s\",\"author\":\"%s\",\"isbn\":\"%s\"," +
                     "\"category\":\"%s\",\"description\":\"%s\",\"filePath\":\"%s\"}",
-                    title, author, isbn, category, description,
-                    selectedFile.getAbsolutePath().replace("\\", "\\\\")
+                    escJson(title), escJson(author), escJson(isbn),
+                    escJson(category), escJson(description),
+                    escJson(selectedFile.getAbsolutePath())
                 );
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/books"))
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(body))
-                        .build();
+                    .uri(URI.create("http://localhost:8080/api/books"))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", SessionManager.bearerHeader())
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
 
                 HttpResponse<String> response = httpClient.send(
-                        request, HttpResponse.BodyHandlers.ofString()
+                    request, HttpResponse.BodyHandlers.ofString()
                 );
 
                 Platform.runLater(() -> {
@@ -174,8 +218,10 @@ public class SellerController implements Initializable {
                         successLabel.setText("¡Libro publicado exitosamente!");
                         limpiarFormulario();
                         cargarMisLibros();
+                    } else if (response.statusCode() == 409) {
+                        errorLabel.setText("Ya existe un libro con ese ISBN.");
                     } else {
-                        errorLabel.setText("Error al publicar. Intenta de nuevo.");
+                        errorLabel.setText("Error al publicar. Código: " + response.statusCode());
                     }
                 });
 
@@ -189,6 +235,54 @@ public class SellerController implements Initializable {
         }).start();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Eliminar libro
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void confirmarEliminar(String isbn, String titulo) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+            "¿Eliminar \"" + titulo + "\"? Esta acción no se puede deshacer.",
+            ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Confirmar eliminación");
+        alert.setHeaderText(null);
+        alert.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) eliminarLibro(isbn);
+        });
+    }
+
+    private void eliminarLibro(String isbn) {
+        new Thread(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8080/api/books/isbn/" + isbn))
+                    .header("Authorization", SessionManager.bearerHeader())
+                    .DELETE()
+                    .build();
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                Platform.runLater(() -> {
+                    cargarMisLibros();
+                    successLabel.setText("Libro eliminado correctamente.");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> errorLabel.setText("Error al eliminar el libro."));
+            }
+        }).start();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Logout
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @FXML
+    private void handleLogout() {
+        SessionManager.clear();
+        cambiarPantalla("/views/main-view.fxml");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void limpiarFormulario() {
         titleField.clear();
         authorField.clear();
@@ -199,9 +293,62 @@ public class SellerController implements Initializable {
         selectedFile = null;
     }
 
-    @FXML
-    private void handleLogout() {
-        cambiarPantalla("/views/login-view.fxml");
+    /** Devuelve: [title, author, category, isbn, createdAt] */
+    private List<String[]> parsearLibros(String json) {
+        List<String[]> lista = new ArrayList<>();
+        if (json == null || json.isBlank()) return lista;
+        for (String obj : dividirObjetos(json)) {
+            lista.add(new String[]{
+                campo(obj, "title"),
+                campo(obj, "author"),
+                campo(obj, "category"),
+                campo(obj, "isbn"),
+                campo(obj, "createdAt")
+            });
+        }
+        return lista;
+    }
+
+    private List<String> dividirObjetos(String json) {
+        List<String> objetos = new ArrayList<>();
+        int depth = 0, start = -1;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '{') {
+                if (depth == 0) start = i;
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0 && start >= 0) {
+                    objetos.add(json.substring(start, i + 1));
+                    start = -1;
+                }
+            }
+        }
+        return objetos;
+    }
+
+    private String campo(String obj, String clave) {
+        String buscar = "\"" + clave + "\"";
+        int idx = obj.indexOf(buscar);
+        if (idx < 0) return "";
+        int after = idx + buscar.length();
+        while (after < obj.length() && (obj.charAt(after) == ':' || obj.charAt(after) == ' ')) after++;
+        if (after >= obj.length()) return "";
+        char first = obj.charAt(after);
+        if (first == '"') {
+            int end = obj.indexOf('"', after + 1);
+            return end > after ? obj.substring(after + 1, end) : "";
+        } else {
+            int end = after;
+            while (end < obj.length() && obj.charAt(end) != ',' && obj.charAt(end) != '}') end++;
+            return obj.substring(after, end).trim();
+        }
+    }
+
+    /** Escapa caracteres especiales para JSON */
+    private String escJson(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private void cambiarPantalla(String fxmlPath) {

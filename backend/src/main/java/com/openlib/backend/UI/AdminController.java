@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -21,6 +22,8 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 @Component
@@ -50,6 +53,7 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<String[], String> uColEmail;
     @FXML private TableColumn<String[], String> uColRole;
     @FXML private TableColumn<String[], String> uColDate;
+    @FXML private TableColumn<String[], String> uColActions;
     @FXML private TextField searchUserField;
 
     // ── Tabla libros
@@ -59,6 +63,7 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<String[], String> bColCategory;
     @FXML private TableColumn<String[], String> bColIsbn;
     @FXML private TableColumn<String[], String> bColDate;
+    @FXML private TableColumn<String[], String> bColActions;
     @FXML private TextField searchBookField;
 
     // ── Tabla órdenes completa
@@ -69,6 +74,10 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<String[], String> oColStatus;
     @FXML private TableColumn<String[], String> oColDate;
     @FXML private Label totalOrdersLabel;
+
+    // Listas completas para filtrado local
+    private ObservableList<String[]> todosLosUsuarios  = FXCollections.observableArrayList();
+    private ObservableList<String[]> todosLosLibros    = FXCollections.observableArrayList();
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
@@ -83,6 +92,10 @@ public class AdminController implements Initializable {
         cargarDashboard();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Configuración de columnas
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void configurarColumnas() {
         // Órdenes recientes
         rColUser.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
@@ -95,6 +108,7 @@ public class AdminController implements Initializable {
         uColEmail.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
         uColRole.setCellValueFactory(d  -> new SimpleStringProperty(d.getValue()[3]));
         uColDate.setCellValueFactory(d  -> new SimpleStringProperty(d.getValue()[4]));
+        uColActions.setCellFactory(col  -> crearCeldaAccionesUsuario());
 
         // Libros
         bColTitle.setCellValueFactory(d    -> new SimpleStringProperty(d.getValue()[0]));
@@ -102,6 +116,7 @@ public class AdminController implements Initializable {
         bColCategory.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
         bColIsbn.setCellValueFactory(d     -> new SimpleStringProperty(d.getValue()[3]));
         bColDate.setCellValueFactory(d     -> new SimpleStringProperty(d.getValue()[4]));
+        bColActions.setCellFactory(col     -> crearCeldaAccionesLibro());
 
         // Órdenes
         oColId.setCellValueFactory(d     -> new SimpleStringProperty(d.getValue()[0]));
@@ -111,35 +126,82 @@ public class AdminController implements Initializable {
         oColDate.setCellValueFactory(d   -> new SimpleStringProperty(d.getValue()[4]));
     }
 
+    /** Celda con botón "Eliminar" para la tabla de usuarios */
+    private TableCell<String[], String> crearCeldaAccionesUsuario() {
+        return new TableCell<>() {
+            private final Button btnEliminar = new Button("Eliminar");
+            {
+                btnEliminar.setStyle(
+                    "-fx-background-color: #cf667933; -fx-text-fill: #cf6679;" +
+                    "-fx-background-radius: 6; -fx-padding: 4 10; -fx-cursor: hand;"
+                );
+                btnEliminar.setOnAction(e -> {
+                    String[] row = getTableView().getItems().get(getIndex());
+                    confirmarEliminarUsuario(row[0], row[1]);
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btnEliminar);
+            }
+        };
+    }
+
+    /** Celda con botón "Eliminar" para la tabla de libros */
+    private TableCell<String[], String> crearCeldaAccionesLibro() {
+        return new TableCell<>() {
+            private final Button btnEliminar = new Button("Eliminar");
+            {
+                btnEliminar.setStyle(
+                    "-fx-background-color: #cf667933; -fx-text-fill: #cf6679;" +
+                    "-fx-background-radius: 6; -fx-padding: 4 10; -fx-cursor: hand;"
+                );
+                btnEliminar.setOnAction(e -> {
+                    String[] row = getTableView().getItems().get(getIndex());
+                    confirmarEliminarLibro(row[3], row[0]); // isbn, titulo
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btnEliminar);
+            }
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Carga de datos desde el backend
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void cargarDashboard() {
         new Thread(() -> {
             try {
-                // Llamadas paralelas al backend
-                HttpResponse<String> usersResp = httpClient.send(
-                    HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/api/users")).GET().build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
-                HttpResponse<String> booksResp = httpClient.send(
-                    HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/api/books")).GET().build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
-                HttpResponse<String> ordersResp = httpClient.send(
-                    HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/api/orders")).GET().build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
+                HttpResponse<String> usersResp = get("/api/users");
+                HttpResponse<String> booksResp = get("/api/books");
+                HttpResponse<String> ordersResp = get("/api/orders");
+
+                List<String[]> usuarios = parsearUsuarios(usersResp.body());
+                List<String[]> libros   = parsearLibros(booksResp.body());
+                List<String[]> ordenes  = parsearOrdenes(ordersResp.body());
+
+                // Recientes: últimas 5 órdenes
+                List<String[]> recientes = ordenes.size() > 5
+                    ? ordenes.subList(ordenes.size() - 5, ordenes.size())
+                    : ordenes;
 
                 Platform.runLater(() -> {
-                    // TODO: parsear los JSON para sacar conteos reales
-                    // Por ahora mostramos datos de ejemplo
-                    lblUsuarios.setText("3");
-                    lblLibros.setText("6");
-                    lblOrdenes.setText("12");
+                    lblUsuarios.setText(String.valueOf(usuarios.size()));
+                    lblLibros.setText(String.valueOf(libros.size()));
+                    lblOrdenes.setText(String.valueOf(ordenes.size()));
 
-                    ObservableList<String[]> recentData = FXCollections.observableArrayList(
-                        new String[]{"juan@openlib.com", "Clean Code", "20/04/2026 09:30"},
-                        new String[]{"maria@openlib.com", "Refactoring", "20/04/2026 08:15"},
-                        new String[]{"carlos@openlib.com", "Algoritmos", "19/04/2026 17:45"}
-                    );
+                    ObservableList<String[]> recentData = FXCollections.observableArrayList();
+                    for (String[] o : recientes) {
+                        // [id, userEmail, bookTitle, status, date] → mostramos [userEmail, bookTitle, date]
+                        recentData.add(new String[]{o[1], o[2], o[4]});
+                    }
                     recentOrdersTable.setItems(recentData);
                 });
 
@@ -153,7 +215,9 @@ public class AdminController implements Initializable {
         }).start();
     }
 
-    // ── Navegación entre paneles ──
+    // ─────────────────────────────────────────────────────────────────────────
+    // Navegación entre paneles
+    // ─────────────────────────────────────────────────────────────────────────
 
     @FXML private void showDashboard() {
         panelDashboard.setVisible(true);
@@ -169,12 +233,18 @@ public class AdminController implements Initializable {
         panelLibros.setVisible(false);
         panelOrdenes.setVisible(false);
 
-        ObservableList<String[]> data = FXCollections.observableArrayList(
-            new String[]{"1", "Juan Passos", "juan@openlib.com", "BUYER", "01/04/2026"},
-            new String[]{"2", "María López", "maria@openlib.com", "SELLER", "05/04/2026"},
-            new String[]{"3", "Admin User", "admin@openlib.com", "ADMIN", "01/01/2026"}
-        );
-        usersTable.setItems(data);
+        new Thread(() -> {
+            try {
+                HttpResponse<String> resp = get("/api/users");
+                List<String[]> usuarios = parsearUsuarios(resp.body());
+                Platform.runLater(() -> {
+                    todosLosUsuarios = FXCollections.observableArrayList(usuarios);
+                    usersTable.setItems(todosLosUsuarios);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> usersTable.setItems(FXCollections.emptyObservableList()));
+            }
+        }).start();
     }
 
     @FXML private void showLibros() {
@@ -183,12 +253,18 @@ public class AdminController implements Initializable {
         panelLibros.setVisible(true);
         panelOrdenes.setVisible(false);
 
-        ObservableList<String[]> data = FXCollections.observableArrayList(
-            new String[]{"Clean Code", "Robert C. Martin", "Programación", "978-01-36", "15/04/2026"},
-            new String[]{"Refactoring", "Martin Fowler", "Programación", "978-02-47", "16/04/2026"},
-            new String[]{"Diseño UX", "Steve Krug", "Diseño", "978-03-58", "17/04/2026"}
-        );
-        booksAdminTable.setItems(data);
+        new Thread(() -> {
+            try {
+                HttpResponse<String> resp = get("/api/books");
+                List<String[]> libros = parsearLibros(resp.body());
+                Platform.runLater(() -> {
+                    todosLosLibros = FXCollections.observableArrayList(libros);
+                    booksAdminTable.setItems(todosLosLibros);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> booksAdminTable.setItems(FXCollections.emptyObservableList()));
+            }
+        }).start();
     }
 
     @FXML private void showOrdenes() {
@@ -197,26 +273,254 @@ public class AdminController implements Initializable {
         panelLibros.setVisible(false);
         panelOrdenes.setVisible(true);
 
-        ObservableList<String[]> data = FXCollections.observableArrayList(
-            new String[]{"ORD-001", "juan@openlib.com", "Clean Code", "COMPLETADA", "20/04/2026 09:30"},
-            new String[]{"ORD-002", "maria@openlib.com", "Refactoring", "COMPLETADA", "20/04/2026 08:15"},
-            new String[]{"ORD-003", "carlos@openlib.com", "Algoritmos", "COMPLETADA", "19/04/2026 17:45"}
-        );
-        ordersTable.setItems(data);
-        totalOrdersLabel.setText(data.size() + " órdenes");
+        new Thread(() -> {
+            try {
+                HttpResponse<String> resp = get("/api/orders");
+                List<String[]> ordenes = parsearOrdenes(resp.body());
+                Platform.runLater(() -> {
+                    ObservableList<String[]> data = FXCollections.observableArrayList(ordenes);
+                    ordersTable.setItems(data);
+                    totalOrdersLabel.setText(data.size() + " órdenes");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    ordersTable.setItems(FXCollections.emptyObservableList());
+                    totalOrdersLabel.setText("Sin datos");
+                });
+            }
+        }).start();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Búsqueda / filtrado local
+    // ─────────────────────────────────────────────────────────────────────────
+
     @FXML private void buscarUsuario() {
-        // TODO: filtrar usersTable por searchUserField
+        String q = searchUserField.getText().trim().toLowerCase();
+        if (q.isEmpty()) {
+            usersTable.setItems(todosLosUsuarios);
+            return;
+        }
+        ObservableList<String[]> filtrado = FXCollections.observableArrayList();
+        for (String[] row : todosLosUsuarios) {
+            // Busca en nombre, email y rol
+            if (row[1].toLowerCase().contains(q)
+             || row[2].toLowerCase().contains(q)
+             || row[3].toLowerCase().contains(q)) {
+                filtrado.add(row);
+            }
+        }
+        usersTable.setItems(filtrado);
     }
 
     @FXML private void buscarLibro() {
-        // TODO: filtrar booksAdminTable por searchBookField
+        String q = searchBookField.getText().trim().toLowerCase();
+        if (q.isEmpty()) {
+            booksAdminTable.setItems(todosLosLibros);
+            return;
+        }
+        ObservableList<String[]> filtrado = FXCollections.observableArrayList();
+        for (String[] row : todosLosLibros) {
+            // Busca en título, autor, categoría e ISBN
+            if (row[0].toLowerCase().contains(q)
+             || row[1].toLowerCase().contains(q)
+             || row[2].toLowerCase().contains(q)
+             || row[3].toLowerCase().contains(q)) {
+                filtrado.add(row);
+            }
+        }
+        booksAdminTable.setItems(filtrado);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Eliminación con confirmación
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void confirmarEliminarUsuario(String id, String nombre) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+            "¿Eliminar al usuario \"" + nombre + "\"? Esta acción no se puede deshacer.",
+            ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Confirmar eliminación");
+        alert.setHeaderText(null);
+        alert.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) eliminarUsuario(id);
+        });
+    }
+
+    private void eliminarUsuario(String id) {
+        new Thread(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8080/api/users/" + id))
+                    .header("Authorization", SessionManager.bearerHeader())
+                    .DELETE()
+                    .build();
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                Platform.runLater(this::showUsuarios);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void confirmarEliminarLibro(String isbn, String titulo) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+            "¿Eliminar el libro \"" + titulo + "\"? Esta acción no se puede deshacer.",
+            ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Confirmar eliminación");
+        alert.setHeaderText(null);
+        alert.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) eliminarLibro(isbn);
+        });
+    }
+
+    private void eliminarLibro(String isbn) {
+        new Thread(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8080/api/books/isbn/" + isbn))
+                    .header("Authorization", SessionManager.bearerHeader())
+                    .DELETE()
+                    .build();
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                Platform.runLater(this::showLibros);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Logout
+    // ─────────────────────────────────────────────────────────────────────────
 
     @FXML
     private void handleLogout() {
-        cambiarPantalla("/views/login-view.fxml");
+        SessionManager.clear();
+        cambiarPantalla("/views/main-view.fxml");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers de parsing JSON simple (sin dependencias externas)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Parsea un array JSON de usuarios.
+     * Formato esperado por objeto:
+     * {"id":"1","fullName":"...","email":"...","role":"...","createdAt":"..."}
+     * Devuelve: [id, fullName, email, role, createdAt]
+     */
+    private List<String[]> parsearUsuarios(String json) {
+        List<String[]> lista = new ArrayList<>();
+        if (json == null || json.isBlank()) return lista;
+        for (String obj : dividirObjetos(json)) {
+            lista.add(new String[]{
+                campo(obj, "id"),
+                campo(obj, "fullName"),
+                campo(obj, "email"),
+                campo(obj, "role"),
+                campo(obj, "createdAt")
+            });
+        }
+        return lista;
+    }
+
+    /**
+     * Parsea un array JSON de libros.
+     * Formato esperado: {"id":"1","title":"...","author":"...","category":"...","isbn":"...","createdAt":"..."}
+     * Devuelve: [title, author, category, isbn, createdAt]
+     */
+    private List<String[]> parsearLibros(String json) {
+        List<String[]> lista = new ArrayList<>();
+        if (json == null || json.isBlank()) return lista;
+        for (String obj : dividirObjetos(json)) {
+            lista.add(new String[]{
+                campo(obj, "title"),
+                campo(obj, "author"),
+                campo(obj, "category"),
+                campo(obj, "isbn"),
+                campo(obj, "createdAt")
+            });
+        }
+        return lista;
+    }
+
+    /**
+     * Parsea un array JSON de órdenes.
+     * Formato esperado: {"id":"...","userEmail":"...","bookTitle":"...","status":"...","createdAt":"..."}
+     * Devuelve: [id, userEmail, bookTitle, status, createdAt]
+     */
+    private List<String[]> parsearOrdenes(String json) {
+        List<String[]> lista = new ArrayList<>();
+        if (json == null || json.isBlank()) return lista;
+        for (String obj : dividirObjetos(json)) {
+            lista.add(new String[]{
+                campo(obj, "id"),
+                campo(obj, "userEmail"),
+                campo(obj, "bookTitle"),
+                campo(obj, "status"),
+                campo(obj, "createdAt")
+            });
+        }
+        return lista;
+    }
+
+    /**
+     * Divide un JSON array "[{...},{...}]" en una lista de objetos JSON "{...}".
+     */
+    private List<String> dividirObjetos(String json) {
+        List<String> objetos = new ArrayList<>();
+        int depth = 0, start = -1;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '{') {
+                if (depth == 0) start = i;
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0 && start >= 0) {
+                    objetos.add(json.substring(start, i + 1));
+                    start = -1;
+                }
+            }
+        }
+        return objetos;
+    }
+
+    /** Extrae el valor de un campo string de un objeto JSON simple. */
+    private String campo(String obj, String clave) {
+        String buscar = "\"" + clave + "\"";
+        int idx = obj.indexOf(buscar);
+        if (idx < 0) return "";
+        int after = idx + buscar.length();
+        // Saltar espacios y ':'
+        while (after < obj.length() && (obj.charAt(after) == ':' || obj.charAt(after) == ' ')) after++;
+        if (after >= obj.length()) return "";
+        char first = obj.charAt(after);
+        if (first == '"') {
+            int end = obj.indexOf('"', after + 1);
+            return end > after ? obj.substring(after + 1, end) : "";
+        } else {
+            // Valor numérico o booleano
+            int end = after;
+            while (end < obj.length() && obj.charAt(end) != ',' && obj.charAt(end) != '}') end++;
+            return obj.substring(after, end).trim();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Navegación
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private final HttpClient httpClientField = HttpClient.newHttpClient();
+
+    private HttpResponse<String> get(String path) throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8080" + path))
+            .header("Authorization", SessionManager.bearerHeader())
+            .GET()
+            .build();
+        return httpClient.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
     private void cambiarPantalla(String fxmlPath) {

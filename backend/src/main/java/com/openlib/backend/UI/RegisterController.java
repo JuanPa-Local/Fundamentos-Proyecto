@@ -55,8 +55,13 @@ public class RegisterController implements Initializable {
         String confirm  = confirmPasswordField.getText();
         String role     = roleComboBox.getValue();
 
+        // Validaciones en cliente
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
             errorLabel.setText("Por favor completa todos los campos.");
+            return;
+        }
+        if (!email.matches("^[\\w.+\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$")) {
+            errorLabel.setText("Ingresa un correo electrónico válido.");
             return;
         }
         if (!password.equals(confirm)) {
@@ -74,18 +79,18 @@ public class RegisterController implements Initializable {
         new Thread(() -> {
             try {
                 String body = String.format(
-                        "{\"fullName\":\"%s\",\"email\":\"%s\",\"password\":\"%s\",\"role\":\"%s\"}",
-                        fullName, email, password, role
+                    "{\"fullName\":\"%s\",\"email\":\"%s\",\"password\":\"%s\",\"role\":\"%s\"}",
+                    escJson(fullName), escJson(email), escJson(password), role
                 );
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/auth/register"))
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(body))
-                        .build();
+                    .uri(URI.create("http://localhost:8080/api/auth/register"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
 
                 HttpResponse<String> response = httpClient.send(
-                        request, HttpResponse.BodyHandlers.ofString()
+                    request, HttpResponse.BodyHandlers.ofString()
                 );
 
                 javafx.application.Platform.runLater(() -> {
@@ -93,7 +98,7 @@ public class RegisterController implements Initializable {
                     registerButton.setText("Crear cuenta");
 
                     if (response.statusCode() == 200 || response.statusCode() == 201) {
-                        successLabel.setText("¡Cuenta creada! Redirigiendo...");
+                        successLabel.setText("¡Cuenta creada! Redirigiendo al login...");
                         new Thread(() -> {
                             try { Thread.sleep(1500); } catch (Exception ignored) {}
                             javafx.application.Platform.runLater(this::goToLogin);
@@ -101,7 +106,7 @@ public class RegisterController implements Initializable {
                     } else if (response.statusCode() == 409) {
                         errorLabel.setText("Ya existe una cuenta con ese correo.");
                     } else {
-                        errorLabel.setText("Error al registrar. Intenta de nuevo.");
+                        errorLabel.setText("Error al registrar (código " + response.statusCode() + "). Intenta de nuevo.");
                     }
                 });
 
@@ -117,7 +122,12 @@ public class RegisterController implements Initializable {
 
     @FXML
     private void goToLogin() {
-        cambiarPantalla("/views/login-view.fxml");
+        // Siempre volvemos a main-view.fxml (pantalla de login)
+        cambiarPantalla("/views/main-view.fxml");
+    }
+
+    private String escJson(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private void cambiarPantalla(String fxmlPath) {
@@ -128,7 +138,7 @@ public class RegisterController implements Initializable {
             Stage stage = (Stage) emailField.getScene().getWindow();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    getClass().getResource("/styles/global.css").toExternalForm()
+                getClass().getResource("/styles/global.css").toExternalForm()
             );
             stage.setScene(scene);
         } catch (IOException e) {

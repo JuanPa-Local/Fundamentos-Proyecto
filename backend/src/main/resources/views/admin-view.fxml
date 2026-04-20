@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.openlib.backend.UI.AdminController"
+            style="-fx-background-color: #121212;">
+
+    <!-- ── NAVBAR ── -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16"
+              style="-fx-background-color: #1e1e1e;
+                     -fx-padding: 14 24 14 24;
+                     -fx-border-color: #2c2c2c;
+                     -fx-border-width: 0 0 1 0;">
+
+            <Label text="OpenLib" style="-fx-text-fill: #cf6679; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Label text="Admin" style="-fx-text-fill: #ffffff; -fx-font-size: 20px;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label text="Panel de administración"
+                   style="-fx-text-fill: #555555; -fx-font-size: 12px;"/>
+
+            <Button text="Cerrar Sesión" onAction="#handleLogout"
+                    style="-fx-background-color: transparent; -fx-text-fill: #888888;
+                           -fx-border-color: #3a3a3a; -fx-border-radius: 8;
+                           -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <!-- ── SIDEBAR ── -->
+    <left>
+        <VBox spacing="4" minWidth="200"
+              style="-fx-background-color: #1a1a1a;
+                     -fx-padding: 20 12 20 12;
+                     -fx-border-color: #2c2c2c;
+                     -fx-border-width: 0 1 0 0;">
+
+            <Label text="Navegación"
+                   style="-fx-text-fill: #888888; -fx-font-size: 11px;
+                          -fx-font-weight: bold; -fx-padding: 0 0 8 8;"/>
+
+            <Button fx:id="btnDashboard" text="  Dashboard" maxWidth="Infinity"
+                    onAction="#showDashboard"
+                    style="-fx-background-color: #cf667922; -fx-text-fill: #cf6679;
+                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
+                           -fx-border-color: transparent; -fx-padding: 10 12; -fx-cursor: hand;"/>
+
+            <Button text="  Usuarios" maxWidth="Infinity"
+                    onAction="#showUsuarios"
+                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
+                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
+                           -fx-border-color: transparent; -fx-padding: 10 12; -fx-cursor: hand;"/>
+
+            <Button text="  Libros" maxWidth="Infinity"
+                    onAction="#showLibros"
+                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
+                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
+                           -fx-border-color: transparent; -fx-padding: 10 12; -fx-cursor: hand;"/>
+
+            <Button text="  Órdenes" maxWidth="Infinity"
+                    onAction="#showOrdenes"
+                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
+                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
+                           -fx-border-color: transparent; -fx-padding: 10 12; -fx-cursor: hand;"/>
+        </VBox>
+    </left>
+
+    <!-- ── ÁREA DE CONTENIDO ── -->
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-background-color: #121212;">
+
+            <!-- ── DASHBOARD ── -->
+            <VBox fx:id="panelDashboard" spacing="24"
+                  style="-fx-padding: 28 28 28 28; -fx-background-color: #121212;">
+
+                <Label text="Dashboard"
+                       style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+
+                <!-- Tarjetas de métricas -->
+                <HBox spacing="16">
+                    <!-- Usuarios activos -->
+                    <VBox spacing="6" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;
+                                 -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;">
+                        <Label text="USUARIOS ACTIVOS"
+                               style="-fx-text-fill: #888888; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblUsuarios" text="—"
+                               style="-fx-text-fill: #ffffff; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                        <Label text="registrados en total"
+                               style="-fx-text-fill: #555555; -fx-font-size: 12px;"/>
+                    </VBox>
+
+                    <!-- Libros -->
+                    <VBox spacing="6" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;
+                                 -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;">
+                        <Label text="LIBROS EN CATÁLOGO"
+                               style="-fx-text-fill: #888888; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblLibros" text="—"
+                               style="-fx-text-fill: #03dac6; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                        <Label text="disponibles para descarga"
+                               style="-fx-text-fill: #555555; -fx-font-size: 12px;"/>
+                    </VBox>
+
+                    <!-- Órdenes -->
+                    <VBox spacing="6" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;
+                                 -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;">
+                        <Label text="DESCARGAS TOTALES"
+                               style="-fx-text-fill: #888888; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblOrdenes" text="—"
+                               style="-fx-text-fill: #bb86fc; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                        <Label text="órdenes completadas"
+                               style="-fx-text-fill: #555555; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Órdenes recientes -->
+                <VBox spacing="12"
+                      style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;
+                             -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Actividad reciente"
+                               style="-fx-text-fill: #ffffff; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ver todo" onAction="#showOrdenes"
+                                style="-fx-background-color: transparent; -fx-text-fill: #bb86fc;
+                                       -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 12px;"/>
+                    </HBox>
+
+                    <TableView fx:id="recentOrdersTable" prefHeight="200"
+                               style="-fx-background-color: transparent; -fx-border-color: transparent;
+                                      -fx-table-cell-border-color: #2c2c2c;">
+                        <columns>
+                            <TableColumn fx:id="rColUser"  text="Usuario"  prefWidth="200"/>
+                            <TableColumn fx:id="rColBook"  text="Libro"    prefWidth="260"/>
+                            <TableColumn fx:id="rColDate"  text="Fecha"    prefWidth="160"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Sin actividad reciente."
+                                   style="-fx-text-fill: #555555;"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </VBox>
+
+            <!-- ── PANEL USUARIOS ── -->
+            <VBox fx:id="panelUsuarios" spacing="16" visible="false"
+                  style="-fx-padding: 28; -fx-background-color: #121212;">
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Gestión de usuarios"
+                           style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchUserField" promptText="Buscar usuario..."
+                               onAction="#buscarUsuario"
+                               style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
+                                      -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
+                                      -fx-border-color: #3a3a3a; -fx-border-radius: 8;
+                                      -fx-padding: 8 14; -fx-font-size: 13px;" prefWidth="240"/>
+                </HBox>
+
+                <TableView fx:id="usersTable" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e; -fx-border-color: #2c2c2c;
+                                  -fx-background-radius: 12; -fx-table-cell-border-color: #2c2c2c;">
+                    <columns>
+                        <TableColumn fx:id="uColId"      text="ID"          prefWidth="80"/>
+                        <TableColumn fx:id="uColName"    text="Nombre"      prefWidth="200"/>
+                        <TableColumn fx:id="uColEmail"   text="Email"       prefWidth="240"/>
+                        <TableColumn fx:id="uColRole"    text="Rol"         prefWidth="100"/>
+                        <TableColumn fx:id="uColDate"    text="Registro"    prefWidth="160"/>
+                        <TableColumn fx:id="uColActions" text="Acciones"    prefWidth="120"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No hay usuarios registrados."
+                               style="-fx-text-fill: #555555; -fx-font-size: 14px;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- ── PANEL LIBROS ── -->
+            <VBox fx:id="panelLibros" spacing="16" visible="false"
+                  style="-fx-padding: 28; -fx-background-color: #121212;">
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Gestión de libros"
+                           style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchBookField" promptText="Buscar libro..."
+                               onAction="#buscarLibro"
+                               style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
+                                      -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
+                                      -fx-border-color: #3a3a3a; -fx-border-radius: 8;
+                                      -fx-padding: 8 14; -fx-font-size: 13px;" prefWidth="240"/>
+                </HBox>
+
+                <TableView fx:id="booksAdminTable" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e; -fx-border-color: #2c2c2c;
+                                  -fx-background-radius: 12; -fx-table-cell-border-color: #2c2c2c;">
+                    <columns>
+                        <TableColumn fx:id="bColTitle"    text="Título"     prefWidth="240"/>
+                        <TableColumn fx:id="bColAuthor"   text="Autor"      prefWidth="180"/>
+                        <TableColumn fx:id="bColCategory" text="Categoría"  prefWidth="130"/>
+                        <TableColumn fx:id="bColIsbn"     text="ISBN"       prefWidth="130"/>
+                        <TableColumn fx:id="bColDate"     text="Publicado"  prefWidth="140"/>
+                        <TableColumn fx:id="bColActions"  text="Acciones"   prefWidth="100"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No hay libros en el sistema."
+                               style="-fx-text-fill: #555555; -fx-font-size: 14px;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- ── PANEL ÓRDENES ── -->
+            <VBox fx:id="panelOrdenes" spacing="16" visible="false"
+                  style="-fx-padding: 28; -fx-background-color: #121212;">
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Órdenes / Descargas"
+                           style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="totalOrdersLabel" text=""
+                           style="-fx-text-fill: #888888; -fx-font-size: 13px;"/>
+                </HBox>
+
+                <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e; -fx-border-color: #2c2c2c;
+                                  -fx-background-radius: 12; -fx-table-cell-border-color: #2c2c2c;">
+                    <columns>
+                        <TableColumn fx:id="oColId"     text="Orden ID"   prefWidth="100"/>
+                        <TableColumn fx:id="oColUser"   text="Usuario"    prefWidth="200"/>
+                        <TableColumn fx:id="oColBook"   text="Libro"      prefWidth="240"/>
+                        <TableColumn fx:id="oColStatus" text="Estado"     prefWidth="110"/>
+                        <TableColumn fx:id="oColDate"   text="Fecha"      prefWidth="160"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No hay órdenes registradas."
+                               style="-fx-text-fill: #555555; -fx-font-size: 14px;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+        </StackPane>
+    </center>
+
+</BorderPane>

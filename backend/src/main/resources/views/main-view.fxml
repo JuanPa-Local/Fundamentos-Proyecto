@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.openlib.backend.UI.ControllerUI"
+      prefWidth="400" prefHeight="500">
+
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <Label text="OpenLib Market" styleClass="title-label"/>
+
+    <VBox spacing="10.0" alignment="CENTER_LEFT">
+        <Label text="Usuario:"/>
+        <TextField fx:id="userField" promptText="Ingrese su email" />
+
+        <Label text="Contraseña:"/>
+        <PasswordField fx:id="passwordField" promptText="••••••••••••" />
+    </VBox>
+
+    <Button fx:id="loginButton" text="Iniciar Sesión" maxWidth="Infinity" onAction="#handleLogin" />
+
+    <Hyperlink text="¿No tienes cuenta? Regístrate aquí"
+               onAction="#goToRegister"
+               style="-fx-text-fill: #bb86fc;" />
+
+</VBox>

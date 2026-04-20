@@ -1,0 +1,44 @@
+/* Fondo oscuro para la ventana principal */
+.root {
+    -fx-background-color: #121212;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* Etiquetas de texto en blanco */
+.label {
+    -fx-text-fill: #ffffff;
+}
+
+/* Título principal con acento morado */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #bb86fc; /* Morado claro/neon */
+}
+
+/* Botones con estilo morado */
+.button {
+    -fx-background-color: #6200ee; /* Morado base */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #7c4dff; /* Morado más brillante al pasar el mouse */
+}
+
+/* Campos de texto (Inputs) */
+.text-field {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+    -fx-border-color: #333333;
+    -fx-border-radius: 3;
+    -fx-prompt-text-fill: #808080;
+}
+
+.text-field:focused {
+    -fx-border-color: #bb86fc; /* Borde morado al escribir */
+}

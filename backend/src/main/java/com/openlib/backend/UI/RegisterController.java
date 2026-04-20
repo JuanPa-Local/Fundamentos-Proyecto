@@ -1,0 +1,138 @@
+package com.openlib.backend.UI;
+
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ResourceBundle;
+
+@Component
+public class RegisterController implements Initializable {
+
+    @FXML private TextField fullNameField;
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private PasswordField confirmPasswordField;
+    @FXML private ComboBox<String> roleComboBox;
+    @FXML private Label errorLabel;
+    @FXML private Label successLabel;
+    @FXML private Button registerButton;
+
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ConfigurableApplicationContext springContext;
+
+    public RegisterController(ConfigurableApplicationContext springContext) {
+        this.springContext = springContext;
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        roleComboBox.setItems(FXCollections.observableArrayList("BUYER", "SELLER"));
+        roleComboBox.getSelectionModel().selectFirst();
+    }
+
+    @FXML
+    private void handleRegister() {
+        errorLabel.setText("");
+        successLabel.setText("");
+
+        String fullName = fullNameField.getText().trim();
+        String email    = emailField.getText().trim();
+        String password = passwordField.getText();
+        String confirm  = confirmPasswordField.getText();
+        String role     = roleComboBox.getValue();
+
+        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            errorLabel.setText("Por favor completa todos los campos.");
+            return;
+        }
+        if (!password.equals(confirm)) {
+            errorLabel.setText("Las contraseñas no coinciden.");
+            return;
+        }
+        if (password.length() < 8) {
+            errorLabel.setText("La contraseña debe tener mínimo 8 caracteres.");
+            return;
+        }
+
+        registerButton.setDisable(true);
+        registerButton.setText("Registrando...");
+
+        new Thread(() -> {
+            try {
+                String body = String.format(
+                        "{\"fullName\":\"%s\",\"email\":\"%s\",\"password\":\"%s\",\"role\":\"%s\"}",
+                        fullName, email, password, role
+                );
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:8080/api/auth/register"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(body))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(
+                        request, HttpResponse.BodyHandlers.ofString()
+                );
+
+                javafx.application.Platform.runLater(() -> {
+                    registerButton.setDisable(false);
+                    registerButton.setText("Crear cuenta");
+
+                    if (response.statusCode() == 200 || response.statusCode() == 201) {
+                        successLabel.setText("¡Cuenta creada! Redirigiendo...");
+                        new Thread(() -> {
+                            try { Thread.sleep(1500); } catch (Exception ignored) {}
+                            javafx.application.Platform.runLater(this::goToLogin);
+                        }).start();
+                    } else if (response.statusCode() == 409) {
+                        errorLabel.setText("Ya existe una cuenta con ese correo.");
+                    } else {
+                        errorLabel.setText("Error al registrar. Intenta de nuevo.");
+                    }
+                });
+
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    registerButton.setDisable(false);
+                    registerButton.setText("Crear cuenta");
+                    errorLabel.setText("No se pudo conectar al servidor.");
+                });
+            }
+        }).start();
+    }
+
+    @FXML
+    private void goToLogin() {
+        cambiarPantalla("/views/login-view.fxml");
+    }
+
+    private void cambiarPantalla(String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setControllerFactory(springContext::getBean);
+            Parent root = loader.load();
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/global.css").toExternalForm()
+            );
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

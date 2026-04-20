@@ -1,70 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.openlib.backend.UI.SellerController"
-            style="-fx-background-color: #121212;">
+<BorderPane style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.openlib.backend.UI.SellerController">
 
     <!-- ── NAVBAR ── -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="16"
-              style="-fx-background-color: #1e1e1e;
-                     -fx-padding: 14 24 14 24;
-                     -fx-border-color: #2c2c2c;
-                     -fx-border-width: 0 0 1 0;">
+        <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #1e1e1e;                      -fx-padding: 14 24 14 24;                      -fx-border-color: #2c2c2c;                      -fx-border-width: 0 0 1 0;">
 
-            <Label text="OpenLib" style="-fx-text-fill: #03dac6; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-            <Label text="Seller" style="-fx-text-fill: #ffffff; -fx-font-size: 20px;"/>
+            <Label style="-fx-text-fill: #03dac6; -fx-font-size: 20px; -fx-font-weight: bold;" text="OpenLib" />
+            <Label style="-fx-text-fill: #ffffff; -fx-font-size: 20px;" text="Seller" />
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
 
-            <Label fx:id="sellerNameLabel" text="Mi cuenta"
-                   style="-fx-text-fill: #888888; -fx-font-size: 13px;"/>
+            <Label fx:id="sellerNameLabel" style="-fx-text-fill: #888888; -fx-font-size: 13px;" text="Mi cuenta" />
 
-            <Button text="Cerrar Sesión" onAction="#handleLogout"
-                    style="-fx-background-color: transparent; -fx-text-fill: #888888;
-                           -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                           -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
+            <Button fx:id="closeSession" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #888888;                            -fx-border-color: #3a3a3a; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Cerrar Sesión" />
         </HBox>
     </top>
 
     <!-- ── CONTENIDO CON TABS ── -->
     <center>
-        <TabPane fx:id="mainTabs" tabClosingPolicy="UNAVAILABLE"
-                 style="-fx-background-color: #121212; -fx-tab-min-height: 40px;">
+        <TabPane fx:id="mainTabs" style="-fx-background-color: #121212; -fx-tab-min-height: 40px;" tabClosingPolicy="UNAVAILABLE">
 
             <!-- ── TAB 1: MIS PUBLICACIONES ── -->
             <Tab text="Mis Publicaciones">
                 <VBox spacing="0" style="-fx-background-color: #121212;">
 
-                    <HBox alignment="CENTER_LEFT" spacing="12"
-                          style="-fx-padding: 20 24 12 24;">
-                        <Label text="Mis libros publicados"
-                               style="-fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: bold;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="totalBooksLabel" text="0 libros"
-                               style="-fx-text-fill: #888888; -fx-font-size: 13px;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 20 24 12 24;">
+                        <Label style="-fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: bold;" text="Mis libros publicados" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="totalBooksLabel" style="-fx-text-fill: #888888; -fx-font-size: 13px;" text="0 libros" />
                     </HBox>
 
-                    <TableView fx:id="booksTable" VBox.vgrow="ALWAYS"
-                               style="-fx-background-color: #1e1e1e;
-                                      -fx-border-color: transparent;
-                                      -fx-table-cell-border-color: #2c2c2c;">
-                        <padding><Insets left="24" right="24"/></padding>
+                    <TableView fx:id="booksTable" style="-fx-background-color: #1e1e1e;                                       -fx-border-color: transparent;                                       -fx-table-cell-border-color: #2c2c2c;" VBox.vgrow="ALWAYS">
+                        <padding><Insets left="24" right="24" /></padding>
                         <columns>
-                            <TableColumn fx:id="colTitle"    text="Título"       prefWidth="250"/>
-                            <TableColumn fx:id="colAuthor"   text="Autor"        prefWidth="180"/>
-                            <TableColumn fx:id="colCategory" text="Categoría"    prefWidth="140"/>
-                            <TableColumn fx:id="colIsbn"     text="ISBN"         prefWidth="140"/>
-                            <TableColumn fx:id="colDate"     text="Publicado"    prefWidth="140"/>
-                            <TableColumn fx:id="colActions"  text="Acciones"     prefWidth="120"/>
+                            <TableColumn fx:id="colTitle" prefWidth="250" text="Título" />
+                            <TableColumn fx:id="colAuthor" prefWidth="180" text="Autor" />
+                            <TableColumn fx:id="colCategory" prefWidth="140" text="Categoría" />
+                            <TableColumn fx:id="colIsbn" prefWidth="140" text="ISBN" />
+                            <TableColumn fx:id="colDate" prefWidth="140" text="Publicado" />
+                            <TableColumn fx:id="colActions" prefWidth="120" text="Acciones" />
                         </columns>
                         <placeholder>
-                            <Label text="Aún no has publicado ningún libro."
-                                   style="-fx-text-fill: #555555; -fx-font-size: 14px;"/>
+                            <Label style="-fx-text-fill: #555555; -fx-font-size: 14px;" text="Aún no has publicado ningún libro." />
                         </placeholder>
                     </TableView>
                 </VBox>
@@ -72,115 +54,60 @@
 
             <!-- ── TAB 2: PUBLICAR NUEVO LIBRO ── -->
             <Tab text="+ Publicar libro">
-                <ScrollPane fitToWidth="true"
-                            style="-fx-background-color: #121212; -fx-background: #121212;">
-                    <VBox alignment="TOP_CENTER" spacing="0"
-                          style="-fx-padding: 32 0; -fx-background-color: #121212;">
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #121212; -fx-background: #121212;">
+                    <VBox alignment="TOP_CENTER" spacing="0" style="-fx-padding: 32 0; -fx-background-color: #121212;">
 
                         <!-- Tarjeta del formulario -->
-                        <VBox spacing="20" maxWidth="600"
-                              style="-fx-background-color: #1e1e1e;
-                                     -fx-background-radius: 16;
-                                     -fx-padding: 36 40;
-                                     -fx-border-color: #2c2c2c;
-                                     -fx-border-radius: 16;">
+                        <VBox maxWidth="600" spacing="20" style="-fx-background-color: #1e1e1e;                                      -fx-background-radius: 16;                                      -fx-padding: 36 40;                                      -fx-border-color: #2c2c2c;                                      -fx-border-radius: 16;">
 
-                            <Label text="Publicar nuevo libro"
-                                   style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;"/>
-                            <Label text="Completa la información del libro. El archivo PDF será almacenado de forma segura."
-                                   wrapText="true"
-                                   style="-fx-text-fill: #888888; -fx-font-size: 13px;"/>
+                            <Label style="-fx-text-fill: #ffffff; -fx-font-size: 22px; -fx-font-weight: bold;" text="Publicar nuevo libro" />
+                            <Label style="-fx-text-fill: #888888; -fx-font-size: 13px;" text="Completa la información del libro. El archivo PDF será almacenado de forma segura." wrapText="true" />
 
                             <!-- Título -->
                             <VBox spacing="6">
-                                <Label text="Título del libro *"
-                                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                <TextField fx:id="titleField" promptText="Ej: Clean Code"
-                                           style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                                                  -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                                                  -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                  -fx-padding: 10 14; -fx-font-size: 14px;"/>
+                                <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="Título del libro *" />
+                                <TextField fx:id="titleField" promptText="Ej: Clean Code" style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                                                   -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                                                   -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                   -fx-padding: 10 14; -fx-font-size: 14px;" />
                             </VBox>
 
                             <!-- Autor -->
                             <VBox spacing="6">
-                                <Label text="Autor *"
-                                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                <TextField fx:id="authorField" promptText="Ej: Robert C. Martin"
-                                           style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                                                  -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                                                  -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                  -fx-padding: 10 14; -fx-font-size: 14px;"/>
+                                <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="Autor *" />
+                                <TextField fx:id="authorField" promptText="Ej: Robert C. Martin" style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                                                   -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                                                   -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                   -fx-padding: 10 14; -fx-font-size: 14px;" />
                             </VBox>
 
                             <!-- ISBN y Categoría en fila -->
                             <HBox spacing="16">
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
-                                    <Label text="ISBN"
-                                           style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                    <TextField fx:id="isbnField" promptText="978-..."
-                                               style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                                                      -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                                                      -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                      -fx-padding: 10 14; -fx-font-size: 14px;"/>
+                                    <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="ISBN" />
+                                    <TextField fx:id="isbnField" promptText="978-..." style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                                                       -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                                                       -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                       -fx-padding: 10 14; -fx-font-size: 14px;" />
                                 </VBox>
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
-                                    <Label text="Categoría *"
-                                           style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                    <ComboBox fx:id="categoryCombo" maxWidth="Infinity"
-                                              promptText="Selecciona una categoría"
-                                              style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                                                     -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                     -fx-background-radius: 8; -fx-font-size: 13px;"/>
+                                    <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="Categoría *" />
+                                    <ComboBox fx:id="categoryCombo" maxWidth="Infinity" promptText="Selecciona una categoría" style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                                                      -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                      -fx-background-radius: 8; -fx-font-size: 13px;" />
                                 </VBox>
                             </HBox>
 
                             <!-- Descripción -->
                             <VBox spacing="6">
-                                <Label text="Descripción"
-                                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                <TextArea fx:id="descriptionArea"
-                                          promptText="Breve descripción del contenido del libro..."
-                                          prefRowCount="4" wrapText="true"
-                                          style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                                                 -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                                                 -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                 -fx-padding: 10 14; -fx-font-size: 14px;"/>
+                                <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="Descripción" />
+                                <TextArea fx:id="descriptionArea" prefRowCount="4" promptText="Breve descripción del contenido del libro..." style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                                                  -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                                                  -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                  -fx-padding: 10 14; -fx-font-size: 14px;" wrapText="true" />
                             </VBox>
 
                             <!-- Selector de PDF -->
                             <VBox spacing="6">
-                                <Label text="Archivo PDF *"
-                                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
-                                <HBox spacing="10" alignment="CENTER_LEFT">
-                                    <TextField fx:id="filePathField"
-                                               promptText="Ningún archivo seleccionado"
-                                               HBox.hgrow="ALWAYS" editable="false"
-                                               style="-fx-background-color: #2c2c2c; -fx-text-fill: #888888;
-                                                      -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                                                      -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                                                      -fx-padding: 10 14; -fx-font-size: 13px;"/>
-                                    <Button text="Seleccionar PDF" onAction="#selectPDF"
-                                            style="-fx-background-color: #2c2c2c; -fx-text-fill: #03dac6;
-                                                   -fx-border-color: #03dac6; -fx-border-radius: 8;
-                                                   -fx-background-radius: 8; -fx-padding: 10 16;
-                                                   -fx-cursor: hand;"/>
+                                <Label style="-fx-text-fill: #cccccc; -fx-font-size: 13px;" text="Archivo PDF *" />
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <TextField fx:id="filePathField" editable="false" promptText="Ningún archivo seleccionado" style="-fx-background-color: #2c2c2c; -fx-text-fill: #888888;                                                       -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                                                       -fx-border-color: #3a3a3a; -fx-border-radius: 8;                                                       -fx-padding: 10 14; -fx-font-size: 13px;" HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#selectPDF" style="-fx-background-color: #2c2c2c; -fx-text-fill: #03dac6;                                                    -fx-border-color: #03dac6; -fx-border-radius: 8;                                                    -fx-background-radius: 8; -fx-padding: 10 16;                                                    -fx-cursor: hand;" text="Seleccionar PDF" />
                                 </HBox>
                             </VBox>
 
                             <!-- Mensajes -->
-                            <Label fx:id="errorLabel" text="" wrapText="true"
-                                   style="-fx-text-fill: #cf6679; -fx-font-size: 12px;"/>
-                            <Label fx:id="successLabel" text="" wrapText="true"
-                                   style="-fx-text-fill: #4caf50; -fx-font-size: 12px;"/>
+                            <Label fx:id="errorLabel" style="-fx-text-fill: #cf6679; -fx-font-size: 12px;" text="" wrapText="true" />
+                            <Label fx:id="successLabel" style="-fx-text-fill: #4caf50; -fx-font-size: 12px;" text="" wrapText="true" />
 
                             <!-- Botón publicar -->
-                            <Button fx:id="publishButton" text="Publicar libro"
-                                    maxWidth="Infinity" onAction="#handlePublish"
-                                    style="-fx-background-color: #03dac6; -fx-text-fill: #000000;
-                                           -fx-font-weight: bold; -fx-font-size: 14px;
-                                           -fx-background-radius: 8; -fx-padding: 13 0;
-                                           -fx-cursor: hand;"/>
+                            <Button fx:id="publishButton" maxWidth="Infinity" onAction="#handlePublish" style="-fx-background-color: #03dac6; -fx-text-fill: #000000;                                            -fx-font-weight: bold; -fx-font-size: 14px;                                            -fx-background-radius: 8; -fx-padding: 13 0;                                            -fx-cursor: hand;" text="Publicar libro" />
                         </VBox>
                     </VBox>
                 </ScrollPane>

@@ -57,14 +57,14 @@
                     <!-- Libros -->
                     <VBox spacing="6" style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;                                  -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
                         <Label style="-fx-text-fill: #888888; -fx-font-size: 11px; -fx-font-weight: bold;" text="LIBROS EN CATÁLOGO" />
-                        <Label fx:id="lblLibros" style="-fx-text-fill: #03dac6; -fx-font-size: 32px; -fx-font-weight: bold;" text="—" />
+                        <Label fx:id="lblLibros" style="-fx-text-fill: #BA4A62; -fx-font-size: 32px; -fx-font-weight: bold;" text="—" />
                         <Label style="-fx-text-fill: #555555; -fx-font-size: 12px;" text="disponibles para descarga" />
                     </VBox>
 
                     <!-- Órdenes -->
                     <VBox spacing="6" style="-fx-background-color: #1e1e1e; -fx-background-radius: 12;                                  -fx-padding: 20; -fx-border-color: #2c2c2c; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
                         <Label style="-fx-text-fill: #888888; -fx-font-size: 11px; -fx-font-weight: bold;" text="DESCARGAS TOTALES" />
-                        <Label fx:id="lblOrdenes" style="-fx-text-fill: #bb86fc; -fx-font-size: 32px; -fx-font-weight: bold;" text="—" />
+                        <Label fx:id="lblOrdenes" style="-fx-text-fill: #983A4E; -fx-font-size: 32px; -fx-font-weight: bold;" text="—" />
                         <Label style="-fx-text-fill: #555555; -fx-font-size: 12px;" text="órdenes completadas" />
                     </VBox>
                 </HBox>
@@ -74,7 +74,7 @@
                     <HBox alignment="CENTER_LEFT">
                         <Label style="-fx-text-fill: #ffffff; -fx-font-size: 15px; -fx-font-weight: bold;" text="Actividad reciente" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button onAction="#showOrdenes" style="-fx-background-color: transparent; -fx-text-fill: #bb86fc;                                        -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 12px;" text="Ver todo" />
+                        <Button onAction="#showOrdenes" style="-fx-background-color: transparent; -fx-text-fill: #C23C5C;                                        -fx-border-color: transparent; -fx-cursor: hand; -fx-font-size: 12px;" text="Ver todo" />
                     </HBox>
 
                     <TableView fx:id="recentOrdersTable" prefHeight="200" style="-fx-background-color: transparent; -fx-border-color: transparent;                                       -fx-table-cell-border-color: #2c2c2c;">

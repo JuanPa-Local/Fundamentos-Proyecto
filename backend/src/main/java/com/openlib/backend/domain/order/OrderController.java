@@ -1,6 +1,5 @@
 package com.openlib.backend.domain.order;
 
-import com.openlib.backend.domain.user.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -31,11 +30,5 @@ public class OrderController {
     @GetMapping("/user/{userId}")
     public List<Order> getByUser(@PathVariable UUID userId) {
         return orderService.getOrdersByUser(userId);
-    }
-
-    // GET /api/orders — todas las órdenes (solo Admin)
-    @GetMapping
-    public List<Order> getAll() {
-        return orderService.getAllOrders();
     }
 }

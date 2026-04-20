@@ -10,18 +10,18 @@
     <top>
         <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #1e1e1e;                      -fx-padding: 14 24 14 24;                      -fx-border-color: #2c2c2c;                      -fx-border-width: 0 0 1 0;">
 
-            <Label style="-fx-text-fill: #bb86fc; -fx-font-size: 20px; -fx-font-weight: bold;" text="OpenLib" />
+            <Label style="-fx-text-fill: #8FC234; -fx-font-size: 20px; -fx-font-weight: bold;" text="OpenLib" />
             <Label style="-fx-text-fill: #ffffff; -fx-font-size: 20px;" text="Market" />
 
             <Region HBox.hgrow="ALWAYS" />
 
             <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="320" promptText="Buscar por título, autor o ISBN..." style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                               -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                               -fx-border-color: #3a3a3a; -fx-border-radius: 8;                               -fx-padding: 8 14; -fx-font-size: 13px;" />
 
-            <Button onAction="#handleSearch" style="-fx-background-color: #bb86fc; -fx-text-fill: #000000;                            -fx-font-weight: bold; -fx-background-radius: 8;                            -fx-padding: 8 18; -fx-cursor: hand;" text="Buscar" />
+            <Button onAction="#handleSearch" style="-fx-background-color: #709630; -fx-text-fill: #000000;                            -fx-font-weight: bold; -fx-background-radius: 8;                            -fx-padding: 8 18; -fx-cursor: hand;" text="Buscar" />
 
             <Region HBox.hgrow="ALWAYS" />
 
-            <Button onAction="#goToBiblioteca" style="-fx-background-color: #2c2c2c; -fx-text-fill: #bb86fc;                            -fx-border-color: #bb86fc; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Mi Biblioteca" />
+            <Button onAction="#goToBiblioteca" style="-fx-background-color: #2c2c2c; -fx-text-fill: #8FC234;                            -fx-border-color: #709630; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Mi Biblioteca" />
 
             <Button fx:id="closeSession" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #888888;                            -fx-border-color: #3a3a3a; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Cerrar Sesión" />
         </HBox>
@@ -33,7 +33,7 @@
 
             <Label style="-fx-text-fill: #888888; -fx-font-size: 11px;                           -fx-font-weight: bold; -fx-padding: 0 0 8 8;" text="Categorías" />
 
-            <Button fx:id="catTodas" maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: #bb86fc22; -fx-text-fill: #bb86fc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Todas" />
+            <Button fx:id="catTodas" maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: #709630; -fx-text-fill: #8FC234;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Todas" />
             <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Programación" />
             <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Ciencias" />
             <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Matemáticas" />

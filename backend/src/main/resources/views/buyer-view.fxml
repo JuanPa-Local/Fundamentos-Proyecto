@@ -1,107 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.openlib.backend.UI.BuyerController"
-            style="-fx-background-color: #121212;">
+<BorderPane style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.openlib.backend.UI.BuyerController">
 
     <!-- ── NAVBAR ── -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="16"
-              style="-fx-background-color: #1e1e1e;
-                     -fx-padding: 14 24 14 24;
-                     -fx-border-color: #2c2c2c;
-                     -fx-border-width: 0 0 1 0;">
+        <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #1e1e1e;                      -fx-padding: 14 24 14 24;                      -fx-border-color: #2c2c2c;                      -fx-border-width: 0 0 1 0;">
 
-            <Label text="OpenLib" style="-fx-text-fill: #bb86fc; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-            <Label text="Market"  style="-fx-text-fill: #ffffff; -fx-font-size: 20px;"/>
+            <Label style="-fx-text-fill: #bb86fc; -fx-font-size: 20px; -fx-font-weight: bold;" text="OpenLib" />
+            <Label style="-fx-text-fill: #ffffff; -fx-font-size: 20px;" text="Market" />
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
 
-            <TextField fx:id="searchField"
-                       promptText="Buscar por título, autor o ISBN..."
-                       prefWidth="320"
-                       onAction="#handleSearch"
-                       style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;
-                              -fx-prompt-text-fill: #555555; -fx-background-radius: 8;
-                              -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                              -fx-padding: 8 14; -fx-font-size: 13px;"/>
+            <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="320" promptText="Buscar por título, autor o ISBN..." style="-fx-background-color: #2c2c2c; -fx-text-fill: #ffffff;                               -fx-prompt-text-fill: #555555; -fx-background-radius: 8;                               -fx-border-color: #3a3a3a; -fx-border-radius: 8;                               -fx-padding: 8 14; -fx-font-size: 13px;" />
 
-            <Button text="Buscar" onAction="#handleSearch"
-                    style="-fx-background-color: #bb86fc; -fx-text-fill: #000000;
-                           -fx-font-weight: bold; -fx-background-radius: 8;
-                           -fx-padding: 8 18; -fx-cursor: hand;"/>
+            <Button onAction="#handleSearch" style="-fx-background-color: #bb86fc; -fx-text-fill: #000000;                            -fx-font-weight: bold; -fx-background-radius: 8;                            -fx-padding: 8 18; -fx-cursor: hand;" text="Buscar" />
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
 
-            <Button text="Mi Biblioteca" onAction="#goToBiblioteca"
-                    style="-fx-background-color: #2c2c2c; -fx-text-fill: #bb86fc;
-                           -fx-border-color: #bb86fc; -fx-border-radius: 8;
-                           -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
+            <Button onAction="#goToBiblioteca" style="-fx-background-color: #2c2c2c; -fx-text-fill: #bb86fc;                            -fx-border-color: #bb86fc; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Mi Biblioteca" />
 
-            <Button text="Cerrar Sesión" onAction="#handleLogout"
-                    style="-fx-background-color: transparent; -fx-text-fill: #888888;
-                           -fx-border-color: #3a3a3a; -fx-border-radius: 8;
-                           -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;"/>
+            <Button fx:id="closeSession" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #888888;                            -fx-border-color: #3a3a3a; -fx-border-radius: 8;                            -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;" text="Cerrar Sesión" />
         </HBox>
     </top>
 
     <!-- ── SIDEBAR DE CATEGORÍAS ── -->
     <left>
-        <VBox spacing="4" minWidth="200"
-              style="-fx-background-color: #1a1a1a;
-                     -fx-padding: 20 12 20 12;
-                     -fx-border-color: #2c2c2c;
-                     -fx-border-width: 0 1 0 0;">
+        <VBox minWidth="200" spacing="4" style="-fx-background-color: #1a1a1a;                      -fx-padding: 20 12 20 12;                      -fx-border-color: #2c2c2c;                      -fx-border-width: 0 1 0 0;">
 
-            <Label text="Categorías"
-                   style="-fx-text-fill: #888888; -fx-font-size: 11px;
-                          -fx-font-weight: bold; -fx-padding: 0 0 8 8;"/>
+            <Label style="-fx-text-fill: #888888; -fx-font-size: 11px;                           -fx-font-weight: bold; -fx-padding: 0 0 8 8;" text="Categorías" />
 
-            <Button fx:id="catTodas" text="  Todas" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: #bb86fc22; -fx-text-fill: #bb86fc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
-            <Button text="  Programación" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
-            <Button text="  Ciencias" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
-            <Button text="  Matemáticas" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
-            <Button text="  Diseño" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
-            <Button text="  Negocios" maxWidth="Infinity"
-                    onAction="#filtrarCategoria"
-                    style="-fx-background-color: transparent; -fx-text-fill: #cccccc;
-                           -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;
-                           -fx-border-color: transparent; -fx-padding: 10 12;
-                           -fx-cursor: hand;"/>
+            <Button fx:id="catTodas" maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: #bb86fc22; -fx-text-fill: #bb86fc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Todas" />
+            <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Programación" />
+            <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Ciencias" />
+            <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Matemáticas" />
+            <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Diseño" />
+            <Button maxWidth="Infinity" onAction="#filtrarCategoria" style="-fx-background-color: transparent; -fx-text-fill: #cccccc;                            -fx-alignment: CENTER_LEFT; -fx-background-radius: 8;                            -fx-border-color: transparent; -fx-padding: 10 12;                            -fx-cursor: hand;" text="  Negocios" />
 
-            <Region VBox.vgrow="ALWAYS"/>
+            <Region VBox.vgrow="ALWAYS" />
 
-            <Label fx:id="userLabel" text="Bienvenido"
-                   style="-fx-text-fill: #555555; -fx-font-size: 11px; -fx-padding: 8;"/>
+            <Label fx:id="userLabel" style="-fx-text-fill: #555555; -fx-font-size: 11px; -fx-padding: 8;" text="Bienvenido" />
         </VBox>
     </left>
 
@@ -110,25 +51,17 @@
         <VBox style="-fx-background-color: #121212;">
 
             <!-- Status bar -->
-            <HBox alignment="CENTER_LEFT" spacing="12"
-                  style="-fx-padding: 16 24 8 24;">
-                <Label fx:id="statusLabel" text="Cargando catálogo..."
-                       style="-fx-text-fill: #888888; -fx-font-size: 13px;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label text="Ordenar por:"
-                       style="-fx-text-fill: #666666; -fx-font-size: 12px;"/>
-                <ComboBox fx:id="sortCombo" promptText="Más recientes"
-                          style="-fx-background-color: #2c2c2c; -fx-text-fill: #cccccc;
-                                 -fx-border-color: #3a3a3a; -fx-background-radius: 6;"/>
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 16 24 8 24;">
+                <Label fx:id="statusLabel" style="-fx-text-fill: #888888; -fx-font-size: 13px;" text="Cargando catálogo..." />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label style="-fx-text-fill: #666666; -fx-font-size: 12px;" text="Ordenar por:" />
+                <ComboBox fx:id="sortCombo" promptText="Más recientes" style="-fx-background-color: #2c2c2c; -fx-text-fill: #cccccc;                                  -fx-border-color: #3a3a3a; -fx-background-radius: 6;" />
             </HBox>
 
             <!-- Grid de libros -->
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                        style="-fx-background-color: transparent; -fx-background: #121212;">
-                <padding><Insets top="8" right="24" bottom="24" left="24"/></padding>
-                <FlowPane fx:id="booksContainer"
-                          hgap="20" vgap="20"
-                          style="-fx-background-color: transparent;"/>
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #121212;" VBox.vgrow="ALWAYS">
+                <padding><Insets bottom="24" left="24" right="24" top="8" /></padding>
+                <FlowPane fx:id="booksContainer" hgap="20" style="-fx-background-color: transparent;" vgap="20" />
             </ScrollPane>
         </VBox>
     </center>

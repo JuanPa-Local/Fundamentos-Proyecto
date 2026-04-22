@@ -117,7 +117,7 @@ public class SellerController implements Initializable {
         new Thread(() -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/api/books/my"))
+                        .uri(URI.create("http://localhost:8080/api/books/my?email=" + SessionManager.getEmail()))
                     .header("Authorization", SessionManager.bearerHeader())
                     .GET()
                     .build();

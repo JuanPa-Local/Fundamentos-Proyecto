@@ -49,4 +49,15 @@ public class BookService {
     public long countBooks() {
         return bookRepository.count();
     }
+
+    public List<Book> getBooksByEmail(String email) {
+        // Por ahora retorna todos los libros
+        // Cuando agregues campo "createdBy" en Book, filtras por email
+        return bookRepository.findAll();
+    }
+
+    public void deleteBookByIsbn(String isbn) {
+        bookRepository.findByIsbn(isbn)
+                .ifPresent(bookRepository::delete);
+    }
 }

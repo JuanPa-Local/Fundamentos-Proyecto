@@ -55,4 +55,17 @@ public class BookController {
     public Map<String, Long> count() {
         return Map.of("total", bookService.countBooks());
     }
+
+    // GET /api/books/my?email=seller@openlib.com
+    @GetMapping("/my")
+    public List<Book> getMyBooks(@RequestParam String email) {
+        return bookService.getBooksByEmail(email);
+    }
+
+    // DELETE /api/books/isbn/{isbn}
+    @DeleteMapping("/isbn/{isbn}")
+    public ResponseEntity<Void> deleteByIsbn(@PathVariable String isbn) {
+        bookService.deleteBookByIsbn(isbn);
+        return ResponseEntity.noContent().build();
+    }
 }

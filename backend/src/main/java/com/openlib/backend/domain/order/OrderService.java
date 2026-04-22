@@ -29,10 +29,8 @@ public class OrderService {
             throw new RuntimeException("El usuario ya tiene este libro");
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Libro no encontrado"));
 
         Order order = new Order();
         order.setUser(user);

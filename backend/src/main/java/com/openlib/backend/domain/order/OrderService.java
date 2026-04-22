@@ -41,11 +41,23 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public List<Order> getOrdersByUser(UUID userId) {
-        return orderRepository.findByUserId(userId);
+        List<Order> orders = orderRepository.findByUserId(userId);
+        orders.forEach(o -> {
+            if (o.getBook() != null) o.getBook().getTitle();
+        });
+        return orders;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+        List<Order> orders = orderRepository.findAll();
+        // Forzar carga de relaciones lazy antes de cerrar la sesión
+        orders.forEach(o -> {
+            if (o.getUser() != null) o.getUser().getFullName();
+            if (o.getBook() != null) o.getBook().getTitle();
+        });
+        return orders;
     }
 }

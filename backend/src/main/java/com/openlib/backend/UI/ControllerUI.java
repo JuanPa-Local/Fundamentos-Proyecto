@@ -61,7 +61,8 @@ public class ControllerUI {
                 );
 
                 HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/api/auth/login"))
+                    /*.uri(URI.create("http://localhost:8080/api/auth/login"))*/
+                        .uri(URI.create("http://localhost:8080/api/users/login"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();

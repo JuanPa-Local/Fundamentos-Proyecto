@@ -38,4 +38,24 @@ public class UserController {
     public List<User> getAll() {
         return userService.getAllUsers();
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) {
+        String email    = body.get("email");
+        String password = body.get("password");
+
+        return userService.login(email, password)
+                .map(user -> ResponseEntity.ok(Map.of(
+                        "email",    user.getEmail(),
+                        "fullName", user.getFullName(),
+                        "role",     user.getRole().name(),
+                        "id",       user.getId().toString()
+                )))
+                .orElse(ResponseEntity.status(401).body(Map.of("error", "Correo o contraseña incorrectos")));
+    }
+
+    @GetMapping("/hash-test")
+    public String hashTest() {
+        return userService.generarHash("openlib123");
+    }
 }

@@ -181,18 +181,19 @@ openlib:
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el Enum `EstadoLibro` en `domain/book/`.
-- [ ] 2. Crear las excepciones de dominio en `domain/book/exception/`.
-- [ ] 3. Escribir `LibroTest` (debe fallar).
-- [ ] 4. Crear la entidad `Libro` con el método fábrica `publicar()`.
-- [ ] 5. Verificar que `LibroTest` pasa.
-- [ ] 6. Definir `LibroRepository` y `ArchivoGateway` en `domain/book/`.
-- [ ] 7. Escribir `PublicarLibroUseCaseTest` con Mockito (debe fallar).
-- [ ] 8. Implementar `PublicarLibroUseCase`.
-- [ ] 9. Verificar que los tests del caso de uso pasan.
-- [ ] 10. Crear el script `V5__crear_tabla_libro.sql`.
-- [ ] 11. Crear `LibroJpaEntity`, `SpringLibroRepository`, `LibroRepositoryAdapter` y `LibroMapper`.
-- [ ] 12. Implementar `LocalArchivoGateway` con configuración desde `application.yml`.
-- [ ] 13. Escribir y verificar `LibroRepositoryAdapterTest`.
-- [ ] 14. Crear `publicar-libro-view.fxml` y `PublicarLibroController.java`.
+- [x] 1. Estado del libro implementado como `String status` (valores: `PENDIENTE`, `APROBADO`, `RECHAZADO`) en `Book.java`.
+- [ ] 2. Excepciones de dominio en `domain/book/exception/` no creadas *(se usa `IllegalArgumentException`/`IllegalStateException`)*.
+- [ ] 3. `LibroTest` no creado.
+- [x] 4. Entidad `Book` existe con `@Builder`, campo `status` (default `"PENDIENTE"`), `sellerEmail`, `rejectionReason`.
+- [ ] 5. Tests pendientes.
+- [x] 6. `BookRepository extends JpaRepository<Book, UUID>` con `existsByIsbn()`.
+- [ ] 7. `PublicarLibroUseCaseTest` no creado.
+- [x] 8. `BookService.createBook()` cumple la función del caso de uso; `existsByIsbn()` previene ISBN duplicados.
+- [ ] 9. Tests del servicio pendientes.
+- [ ] 10. Script `V5__crear_tabla_libro.sql` no existe *(Hibernate gestiona el esquema)*.
+- [x] 11. No existe `LibroJpaEntity` separada — `Book.java` es directamente la entidad JPA.
+- [ ] 12. `ArchivoGateway` / `LocalArchivoGateway` no implementados *(archivos gestionados como `filePath` String)*.
+- [ ] 13. Tests de repositorio pendientes.
+- [x] 14. `seller-view.fxml` y `SellerController.java` existen con formulario de publicación de libros.
+- [ ] 15. `mvn verify` pendiente.
 - [ ] 15. Verificar que `mvn verify` pasa completo.

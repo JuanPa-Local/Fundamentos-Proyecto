@@ -134,16 +134,9 @@ public interface SesionGateway {
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Agregar métodos `validarCredenciales()` y `estaActivo()` a la entidad `Usuario`.
-- [ ] 2. Crear excepciones `CredencialesInvalidasException` y `CuentaInactivaException`.
-- [ ] 3. Crear el Value Object `SesionUsuario` en `domain/user/`.
-- [ ] 4. Definir la interface `SesionGateway` en `domain/user/`.
-- [ ] 5. Escribir los tests unitarios de `Usuario` (ampliados) y el test de `IniciarSesionUseCase` con Mockito.
-- [ ] 6. Implementar `IniciarSesionUseCase`.
-- [ ] 7. Verificar que los tests del caso de uso pasan.
-- [ ] 8. Implementar `SpringSesionGateway` con Spring Session + Redis.
-- [ ] 9. Implementar `OpenLibUserDetailsService`.
-- [ ] 10. Actualizar `SecurityConfig` con las reglas de acceso definitivas.
-- [ ] 11. Escribir y verificar `SpringSesionGatewayTest` con TestContainers.
-- [ ] 12. Actualizar `SessionManager` y crear `LoginController` en la capa UI.
-- [ ] 13. Verificar que `mvn verify` pasa completo.
+- [x] 1. `UserService.login(email, password)` — valida credenciales con BCrypt.
+- [x] 2. `POST /api/users/login` retorna email, fullName, role, id.
+- [x] 3. `SessionManager.java` implementado con Singleton — guarda email, role, fullName, token, expone `isLoggedIn()` y `bearerHeader()`.
+- [x] 4. `ControllerUI.java` — al hacer login exitoso, llama a `SessionManager.getInstance().set*()` y navega a la vista correcta según rol usando `ViewFactory`.
+- [ ] PENDIENTE: `validarCredenciales()` y `estaActivo()` en entidad `User` (el chequeo de cuenta inactiva lo hace `isActive()` ya existente pero no se valida en el login aún).
+- [ ] PENDIENTE: `SesionGateway` con Spring Session + Redis (actualmente se usa JWT/token simple en `SessionManager`).

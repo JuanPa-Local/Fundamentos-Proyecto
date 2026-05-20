@@ -33,9 +33,11 @@ public class RegisterController implements Initializable {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
+    private final ViewFactory viewFactory;
 
-    public RegisterController(ConfigurableApplicationContext springContext) {
+    public RegisterController(ConfigurableApplicationContext springContext, ViewFactory viewFactory) {
         this.springContext = springContext;
+        this.viewFactory = viewFactory;
     }
 
     @Override
@@ -123,26 +125,12 @@ public class RegisterController implements Initializable {
     @FXML
     private void goToLogin() {
         // Siempre volvemos a main-view.fxml (pantalla de login)
-        cambiarPantalla("/views/main-view.fxml");
+        viewFactory.showView("/views/main-view.fxml", (Stage) emailField.getScene().getWindow());
     }
 
     private String escJson(String s) {
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    private void cambiarPantalla(String fxmlPath) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(springContext::getBean);
-            Parent root = loader.load();
-            Stage stage = (Stage) emailField.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                getClass().getResource("/styles/global.css").toExternalForm()
-            );
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }

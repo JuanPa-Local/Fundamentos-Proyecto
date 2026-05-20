@@ -105,11 +105,11 @@ spring:
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el proyecto en [Spring Initializr](https://start.spring.io) con Java 25 y las dependencias listadas.
-- [ ] 2. Configurar `pom.xml` con todas las dependencias necesarias.
-- [ ] 3. Crear la estructura de paquetes base: `domain/`, `infrastructure/`, `UI/`, `config/`.
-- [ ] 4. Crear `BackendApplication.java` con Javadoc.
-- [ ] 5. Crear `application.yml` con perfiles `dev`, `test` y `prod`.
-- [ ] 6. Escribir `BackendApplicationTests` y verificar que pasa.
-- [ ] 7. Crear `SecurityConfig.java` con configuración base (permitir todo temporalmente hasta US-005).
-- [ ] 8. Confirmar que `mvn verify` pasa en el pipeline CI.
+- [x] 1. Proyecto creado con Spring Initializr, Java 25 y dependencias correctas.
+- [x] 2. `pom.xml` contiene: web, security, data-jpa, validation, data-redis, openjfx, lombok, postgresql.
+- [x] 3. Estructura base creada: `domain/`, `UI/`, `config/`. *(nota: `infrastructure/` no existe — se usa arquitectura en capas, no hexagonal)*
+- [x] 4. `BackendApplication.java` existe con `@SpringBootApplication`.
+- [x] 5. `application.properties` existe con conexión a PostgreSQL y Redis.
+- [ ] 6. `BackendApplicationTests` pendiente *(requiere BD activa para pasar)*.
+- [x] 7. `SecurityConfig.java` existe con `BCryptPasswordEncoder` y reglas de acceso.
+- [ ] 8. Confirmar que `mvn verify` pasa en CI *(pendiente: requiere BD en el entorno de CI)*.

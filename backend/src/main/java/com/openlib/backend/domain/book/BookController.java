@@ -16,31 +16,28 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // GET /api/books  o  GET /api/books?title=java
+    // GET /api/books
     @GetMapping
-    public List<Book> getAll(@RequestParam(required = false) String title) {
-        if (title != null && !title.isBlank()) {
-            return bookService.searchByTitle(title);
-        }
+    public List<Book> getAll() {
         return bookService.getAllBooks();
     }
 
-    // GET /api/books/{id}
+    // US-012: GET /api/books/{id} — Detalle del libro
     @GetMapping("/{id}")
-    public Book getById(@PathVariable UUID id) {
-        return bookService.getBookById(id);
+    public ResponseEntity<Book> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
     }
 
     // POST /api/books
     @PostMapping
-    public Book create(@RequestBody Book book) {
-        return bookService.createBook(book);
+    public ResponseEntity<Book> create(@RequestBody Book book) {
+        return ResponseEntity.ok(bookService.createBook(book));
     }
 
     // PUT /api/books/{id}
     @PutMapping("/{id}")
-    public Book update(@PathVariable UUID id, @RequestBody Book book) {
-        return bookService.updateBook(id, book);
+    public ResponseEntity<Book> update(@PathVariable UUID id, @RequestBody Book book) {
+        return ResponseEntity.ok(bookService.updateBook(id, book));
     }
 
     // DELETE /api/books/{id}
@@ -50,22 +47,53 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
-    // GET /api/books/count
-    @GetMapping("/count")
-    public Map<String, Long> count() {
-        return Map.of("total", bookService.countBooks());
+    // US-010: Búsqueda del catálogo
+    @GetMapping("/catalog")
+    public List<Book> searchCatalog(@RequestParam(required = false) String q) {
+        return bookService.searchCatalog(q);
     }
 
-    // GET /api/books/my?email=seller@openlib.com
-    @GetMapping("/my")
-    public List<Book> getMyBooks(@RequestParam String email) {
-        return bookService.getBooksByEmail(email);
+    // US-011: Búsqueda con filtros (término + categoría)
+    @GetMapping("/catalog/filter")
+    public List<Book> searchCatalogFiltered(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String category) {
+        return bookService.searchCatalogWithFilters(q, category);
     }
 
-    // DELETE /api/books/isbn/{isbn}
-    @DeleteMapping("/isbn/{isbn}")
-    public ResponseEntity<Void> deleteByIsbn(@PathVariable String isbn) {
-        bookService.deleteBookByIsbn(isbn);
-        return ResponseEntity.noContent().build();
+    // US-013: Listar categorías disponibles
+    @GetMapping("/categories")
+    public List<String> getCategories() {
+        return bookService.getAllCategories();
+    }
+
+    // US-014: Listar libros por estado (PENDIENTE, APROBADO, RECHAZADO)
+    @GetMapping("/status/{status}")
+    public List<Book> getByStatus(@PathVariable String status) {
+        return bookService.getBooksByStatus(status);
+    }
+
+    // US-009: Libros por vendedor
+    @GetMapping("/seller/{sellerEmail}")
+    public List<Book> getBySeller(@PathVariable String sellerEmail) {
+        return bookService.getBooksBySeller(sellerEmail);
+    }
+
+    // US-014: Aprobar libro
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<Book> approve(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookService.approveBook(id));
+    }
+
+    // US-014: Rechazar libro
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<Book> reject(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(bookService.rejectBook(id, body.get("reason")));
+    }
+
+    // US-023: Libros más populares
+    @GetMapping("/popular")
+    public List<Book> getPopular(@RequestParam(defaultValue = "10") int limit) {
+        return bookService.getMostPopularBooks(limit);
     }
 }

@@ -131,15 +131,16 @@ Actualizar `LibroJpaEntity` y `LibroMapper` para incluir estos campos.
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear los Value Objects `DetalleLibro` y `ResenaResumen` en `domain/book/`.
-- [ ] 2. Crear `LibroNoDisponibleException` en `domain/book/exception/`.
-- [ ] 3. Definir la interface `ResenaRepository` en `domain/book/`.
-- [ ] 4. Escribir `VerDetalleLibroUseCaseTest` con Mockito (debe fallar).
-- [ ] 5. Implementar `VerDetalleLibroUseCase`.
-- [ ] 6. Verificar que los tests pasan.
-- [ ] 7. Crear el script `V7__agregar_campos_detalle_libro.sql`.
-- [ ] 8. Actualizar `LibroJpaEntity` y `LibroMapper`.
-- [ ] 9. Crear `ResenaRepositoryAdapterProvisional`.
-- [ ] 10. Ampliar `LibroRepositoryAdapterTest` y verificar.
-- [ ] 11. Crear `detalle-libro-view.fxml` y `DetalleLibroController.java`.
+- [ ] 1. `DetalleLibro` y `ResenaResumen` Value Objects no creados *(el endpoint `GET /api/books/{id}` retorna la entidad Book completa directamente)*.
+- [ ] 2. `LibroNoDisponibleException` no creada.
+- [ ] 3. `ResenaRepository` interface no creada.
+- [ ] 4. `VerDetalleLibroUseCaseTest` no creado.
+- [ ] 5. `VerDetalleLibroUseCase` no implementado *(cubierto por `BookService.getBookById()`)*.
+- [ ] 6. Tests pendientes.
+- [ ] 7. Script `V7__agregar_campos_detalle_libro.sql` no existe.
+- [x] 8. `Book.java` ya tiene `description` y `coverUrl` como campos de la entidad.
+- [ ] 9. `ResenaRepositoryAdapterProvisional` no creada.
+- [ ] 10. Tests de repositorio pendientes.
+- [ ] 11. `detalle-libro-view.fxml` y `DetalleLibroController.java` no creados *(el detalle se muestra en `buyer-view.fxml` actualmente)*.
+- [ ] 12. `mvn verify` pendiente.
 - [ ] 12. Verificar que `mvn verify` pasa completo.

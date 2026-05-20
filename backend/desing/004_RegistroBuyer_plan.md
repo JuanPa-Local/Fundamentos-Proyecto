@@ -139,17 +139,17 @@ Si no existe aún, el script `V1__crear_esquema_inicial.sql` (US-003) ya incluye
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el Enum `RolUsuario` en `domain/user/`.
-- [ ] 2. Crear las excepciones de dominio en `domain/user/exception/`.
-- [ ] 3. Escribir los tests unitarios de `Usuario` (deben fallar).
-- [ ] 4. Crear la entidad `Usuario` con el método fábrica `registrarBuyer()`.
-- [ ] 5. Verificar que los tests de dominio pasan.
-- [ ] 6. Definir la interface `UsuarioRepository` en `domain/user/`.
-- [ ] 7. Escribir `RegistrarBuyerUseCaseTest` con Mockito (debe fallar).
-- [ ] 8. Implementar `RegistrarBuyerUseCase`.
-- [ ] 9. Verificar que el test del caso de uso pasa.
-- [ ] 10. Crear `UsuarioJpaEntity`, `SpringUsuarioRepository` y `UsuarioRepositoryAdapter`.
-- [ ] 11. Crear `UsuarioMapper` para la conversión dominio ↔ JPA.
-- [ ] 12. Escribir y verificar `UsuarioRepositoryAdapterTest` (`@DataJpaTest`).
-- [ ] 13. Actualizar `register-view.fxml` y `RegisterController.java` para integrar el caso de uso.
-- [ ] 14. Verificar que `mvn verify` pasa completo.
+- [x] 1. Enum `Role` existe en `User.java` con valores `BUYER`, `SELLER`, `ADMIN`.
+- [ ] 2. Excepciones de dominio en `domain/user/exception/` — no creadas *(se usan `RuntimeException` directamente)*.
+- [ ] 3. Tests unitarios pendientes.
+- [x] 4. Entidad `User` existe con `@Builder`, campos email, fullName, passwordHash, role, active, createdAt.
+- [ ] 5. Tests de dominio pendientes.
+- [x] 6. `UserRepository extends JpaRepository<User, UUID>` con `findByEmail()` y `existsByEmail()`.
+- [ ] 7. `RegistrarBuyerUseCaseTest` no creado *(arquitectura en capas, sin caso de uso separado)*.
+- [x] 8. `UserService.register()` orquesta la creación con validación de email único y cifrado BCrypt.
+- [ ] 9. Test del servicio pendiente.
+- [x] 10. No existe `UsuarioJpaEntity` separada — `User.java` es directamente la entidad JPA *(arquitectura en capas)*.
+- [x] 11. No existe `UsuarioMapper` — la entidad JPA es el dominio directamente.
+- [ ] 12. `UsuarioRepositoryAdapterTest` no creado.
+- [x] 13. `register-view.fxml` y `RegisterController.java` existen e integran el flujo de registro.
+- [ ] 14. `mvn verify` pendiente.

@@ -11,4 +11,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    // US-008: Filtros para gestión de admin
+    List<User> findByRole(User.Role role);
+    List<User> findByActive(boolean active);
+    List<User> findByRoleAndActive(User.Role role, boolean active);
 }

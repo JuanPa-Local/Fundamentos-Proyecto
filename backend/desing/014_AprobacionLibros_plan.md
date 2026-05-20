@@ -137,16 +137,17 @@ Page<LibroJpaEntity> findByEstado(String estado, Pageable pageable);
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear las excepciones `LibroNoEnEstadoPendienteException` y `MotivoRechazoObligatorioException`.
-- [ ] 2. Ampliar `LibroTest` con los tests de `aprobar()` y `rechazar()` (deben fallar).
-- [ ] 3. Agregar métodos `aprobar()` y `rechazar()` a la entidad `Libro`.
-- [ ] 4. Verificar que los tests de dominio pasan.
-- [ ] 5. Definir la interface `NotificacionGateway` en `domain/book/`.
-- [ ] 6. Agregar `buscarPorEstado()` a `LibroRepository`.
-- [ ] 7. Escribir los tests de `AprobarLibroUseCase` y `RechazarLibroUseCase`.
-- [ ] 8. Implementar ambos casos de uso y `ListarLibrosPendientesUseCase`.
-- [ ] 9. Verificar que los tests pasan.
-- [ ] 10. Crear `ConsolaNotificacionGateway` en `infrastructure/notification/`.
-- [ ] 11. Actualizar `LibroRepositoryAdapter` con `buscarPorEstado()`.
-- [ ] 12. Actualizar `admin-view.fxml` y `AdminController.java`.
+- [ ] 1. `LibroNoEnEstadoPendienteException` y `MotivoRechazoObligatorioException` no creadas *(se usa `IllegalStateException`/`IllegalArgumentException`)*.
+- [ ] 2. Tests de dominio para `approve()` y `reject()` pendientes.
+- [x] 3. `Book.approve()` — cambia status a `APROBADO`; lanza `IllegalStateException` si no está en `PENDIENTE`. `Book.reject(reason)` — cambia a `RECHAZADO`, valida motivo no vacío.
+- [ ] 4. Tests de dominio pendientes.
+- [ ] 5. `NotificacionGateway` interface no creada.
+- [x] 6. `BookRepository.findByStatus(String status)` implementado.
+- [ ] 7. Tests de `AprobarLibroUseCase` y `RechazarLibroUseCase` pendientes.
+- [x] 8. `BookService.approveBook()`, `rejectBook()`, `getBooksByStatus()` implementados.
+- [ ] 9. Tests pendientes.
+- [ ] 10. `ConsolaNotificacionGateway` no creada.
+- [x] 11. `BookRepository.findByStatus()` cumple la función de `buscarPorEstado()`.
+- [x] 12. `POST /api/books/{id}/approve` y `POST /api/books/{id}/reject` implementados en `BookController`; `admin-view.fxml` y `AdminController.java` existen.
+- [ ] 13. `mvn verify` pendiente.
 - [ ] 13. Verificar que `mvn verify` pasa completo.

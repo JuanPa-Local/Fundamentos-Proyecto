@@ -185,22 +185,23 @@ CREATE TABLE orden_item (
 
 ## 📋 Tareas de Implementación (US-017)
 
-- [ ] 1. Crear `MetodoPago` (Enum) y excepciones `MetodoPagoInvalidoException` y `SesionCheckoutExpiradaException`.
-- [ ] 2. Escribir `GuardarMetodoPagoUseCaseTest` (debe fallar).
-- [ ] 3. Implementar `GuardarMetodoPagoUseCase` y verificar.
-- [ ] 4. Crear `checkout-pago-view.fxml` y `CheckoutPagoController.java`.
+- [ ] 1. `MetodoPago` Enum y excepciones no creados.
+- [ ] 2. `GuardarMetodoPagoUseCaseTest` no creado.
+- [ ] 3. `GuardarMetodoPagoUseCase` no implementado.
+- [ ] 4. `checkout-pago-view.fxml` y `CheckoutPagoController.java` no creados.
 
 ## 📋 Tareas de Implementación (US-018)
 
-- [ ] 5. Crear `ItemOrden`, `EstadoOrden` y `SesionCheckoutIncompletaException` en `domain/order/`.
-- [ ] 6. Escribir `OrdenTest` (debe fallar).
-- [ ] 7. Crear la entidad `Orden` con el método fábrica `confirmar()`.
-- [ ] 8. Verificar que `OrdenTest` pasa.
-- [ ] 9. Definir `OrdenRepository` en `domain/order/`.
-- [ ] 10. Escribir `ConfirmarOrdenUseCaseTest` con Mockito (debe fallar).
-- [ ] 11. Implementar `ConfirmarOrdenUseCase` y verificar.
-- [ ] 12. Crear el script `V9__crear_tabla_orden.sql`.
-- [ ] 13. Crear `OrdenJpaEntity`, `OrdenItemJpaEntity`, `SpringOrdenRepository`, `OrdenRepositoryAdapter` y `OrdenMapper`.
-- [ ] 14. Escribir y verificar `OrdenRepositoryAdapterTest`.
-- [ ] 15. Crear `checkout-confirmacion-view.fxml` y `CheckoutConfirmacionController.java`.
+- [ ] 5. `ItemOrden`, `EstadoOrden` y `SesionCheckoutIncompletaException` no creados en `domain/order/`.
+- [ ] 6. `OrdenTest` no creado.
+- [x] 7. Entidad `Order.java` existe con `@Builder`, relaciones a `User` y `Book`, campo `status` (default `COMPLETED`), `totalPrice`, `orderedAt`.
+- [x] 8. `Order` construible mediante Builder de Lombok.
+- [x] 9. `OrderRepository extends JpaRepository<Order, UUID>` con `findByUser()`.
+- [ ] 10. `ConfirmarOrdenUseCaseTest` no creado.
+- [x] 11. `OrderService.createOrder(userId, bookId)` crea la orden, aplica `DiscountStrategy` (patrón Strategy) y dispara `OrderCompletedEvent` (patrón Observer).
+- [ ] 12. Script `V9__crear_tabla_orden.sql` no existe *(Hibernate gestiona el esquema)*.
+- [x] 13. No existe `OrdenJpaEntity` separada — `Order.java` es directamente la entidad JPA.
+- [ ] 14. Tests de repositorio pendientes.
+- [ ] 15. `checkout-confirmacion-view.fxml` y `CheckoutConfirmacionController.java` no creados.
+- [ ] 16. `mvn verify` pendiente.
 - [ ] 16. Verificar que `mvn verify` pasa completo.

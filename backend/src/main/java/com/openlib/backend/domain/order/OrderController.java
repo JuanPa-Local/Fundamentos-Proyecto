@@ -1,11 +1,12 @@
 package com.openlib.backend.domain.order;
 
+import com.openlib.backend.domain.book.Book;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -17,24 +18,9 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // GET /api/orders — todas las órdenes para Admin
-    @GetMapping
-    public List<Map<String, String>> getAll() {
-        return orderService.getAllOrders().stream()
-                .map(o -> Map.of(
-                        "id",        o.getId().toString(),
-                        "status",    o.getStatus(),
-                        "orderedAt", o.getOrderedAt().toString(),
-                        "userName",  o.getUser() != null ? o.getUser().getFullName() : "—",
-                        "userEmail", o.getUser() != null ? o.getUser().getEmail()    : "—",
-                        "bookTitle", o.getBook() != null ? o.getBook().getTitle()    : "—"
-                ))
-                .collect(Collectors.toList());
-    }
-
-    // POST /api/orders
+    // US-018: Crear orden
     @PostMapping
-    public ResponseEntity<Order> create(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Order> createOrder(@RequestBody Map<String, String> body) {
         Order order = orderService.createOrder(
                 UUID.fromString(body.get("userId")),
                 UUID.fromString(body.get("bookId"))
@@ -42,17 +28,49 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
-    // GET /api/orders/user/{userId}
+    // US-022: Historial de órdenes paginado
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<Page<Order>> getHistory(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getOrderHistory(userId, page, size));
+    }
+
+    // US-022: Detalle de una orden
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> getOrderById(@PathVariable UUID id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    // US-019: Biblioteca del usuario (libros adquiridos)
+    @GetMapping("/library/{userId}")
+    public List<Book> getLibrary(@PathVariable UUID userId) {
+        return orderService.getLibrary(userId);
+    }
+
+    // US-019: Verificar si un libro está en la biblioteca
+    @GetMapping("/library/check")
+    public ResponseEntity<Map<String, Boolean>> isInLibrary(
+            @RequestParam UUID userId, @RequestParam UUID bookId) {
+        return ResponseEntity.ok(Map.of("inLibrary", orderService.isInLibrary(userId, bookId)));
+    }
+
+    // Listado por usuario
     @GetMapping("/user/{userId}")
-    public List<Map<String, String>> getByUser(@PathVariable UUID userId) {
-        return orderService.getOrdersByUser(userId).stream()
-                .map(o -> Map.of(
-                        "id",        o.getId().toString(),
-                        "status",    o.getStatus(),
-                        "orderedAt", o.getOrderedAt().toString(),
-                        "bookTitle", o.getBook() != null ? o.getBook().getTitle()  : "—",
-                        "bookId",    o.getBook() != null ? o.getBook().getId().toString() : "—"
-                ))
-                .collect(Collectors.toList());
+    public List<Order> getByUser(@PathVariable UUID userId) {
+        return orderService.getOrdersByUser(userId);
+    }
+
+    // Todas las órdenes (admin)
+    @GetMapping
+    public List<Order> getAll() {
+        return orderService.getAllOrders();
+    }
+
+    // US-026: Estadísticas de ventas del seller
+    @GetMapping("/seller/{sellerEmail}")
+    public List<Order> getBySeller(@PathVariable String sellerEmail) {
+        return orderService.getOrdersBySeller(sellerEmail);
     }
 }

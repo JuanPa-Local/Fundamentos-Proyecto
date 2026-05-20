@@ -152,16 +152,17 @@ CREATE TABLE auditoria_accion (
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el Value Object `AuditoriaAccion` en `domain/user/`.
-- [ ] 2. Crear el Value Object `FiltroUsuario` en `domain/user/`.
-- [ ] 3. Definir la interface `AuditoriaRepository` en `domain/user/`.
-- [ ] 4. Agregar `buscarConFiltros()` a la interface `UsuarioRepository`.
-- [ ] 5. Escribir los tests de `CambiarEstadoCuentaUseCase` y `ListarUsuariosUseCase`.
-- [ ] 6. Implementar ambos casos de uso y verificar tests.
-- [ ] 7. Crear el script `V4__crear_tabla_auditoria.sql`.
-- [ ] 8. Crear `AuditoriaJpaEntity`, `SpringAuditoriaRepository` y `AuditoriaRepositoryAdapter`.
-- [ ] 9. Actualizar `SpringUsuarioRepository` con `Specification` para filtros dinámicos.
-- [ ] 10. Escribir y verificar `AuditoriaRepositoryAdapterTest`.
-- [ ] 11. Actualizar `SecurityConfig` con las rutas de admin.
-- [ ] 12. Actualizar `admin-view.fxml` y `AdminController.java`.
+- [ ] 1. `AuditoriaAccion` Value Object no creado.
+- [ ] 2. `FiltroUsuario` Value Object no creado *(filtros implementados directamente como parámetros de método)*.
+- [ ] 3. `AuditoriaRepository` interface no creada.
+- [x] 4. `UserRepository` tiene `findByRole()`, `findByActive()`, `findByRoleAndActive()` para filtros dinámicos.
+- [ ] 5. Tests de `CambiarEstadoCuentaUseCase` y `ListarUsuariosUseCase` pendientes.
+- [x] 6. `UserService.activateUser()` y `deactivateUser()` implementados; `getUsersByRole()` implementado.
+- [ ] 7. Script `V4__crear_tabla_auditoria.sql` no existe *(Hibernate gestiona el esquema)*.
+- [ ] 8. `AuditoriaJpaEntity` y adaptadores no creados.
+- [x] 9. `UserRepository` usa queries derivadas de Spring Data en lugar de `Specification` JPA.
+- [ ] 10. Tests de auditoría pendientes.
+- [x] 11. `SecurityConfig` existe *(rutas admin aún públicas — pendiente proteger con roles)*.
+- [x] 12. `admin-view.fxml` y `AdminController.java` existen con listado, activación y desactivación de usuarios.
+- [ ] 13. `mvn verify` pendiente.
 - [ ] 13. Verificar que `mvn verify` pasa completo.

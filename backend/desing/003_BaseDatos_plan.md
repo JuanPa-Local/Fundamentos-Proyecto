@@ -138,12 +138,13 @@ spring:
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Agregar dependencias de Flyway y Spring Session Redis al `pom.xml`.
-- [ ] 2. Crear `docker-compose.yml` con los servicios de PostgreSQL y Redis.
-- [ ] 3. Escribir los tests `DatabaseConnectionTest` y `RedisConnectionTest` (deben fallar inicialmente).
-- [ ] 4. Crear el directorio `src/main/resources/db/migration/`.
-- [ ] 5. Crear el script `V1__crear_esquema_inicial.sql` con las tablas base.
-- [ ] 6. Configurar `application.yml` con los perfiles `dev` y `test`.
-- [ ] 7. Verificar que ambos tests pasan tras aplicar la configuración.
-- [ ] 8. Documentar el diagrama ER inicial en el `README.md` o en un archivo `docs/esquema-er.md`.
+- [ ] 1. Flyway no instalado — Hibernate gestiona el esquema con `ddl-auto`. *(decisión de arquitectura: se mantiene así)*
+- [x] 2. `docker-compose.yml` existe con PostgreSQL (5432) y Redis (6379).
+- [ ] 3. `DatabaseConnectionTest` y `RedisConnectionTest` pendientes.
+- [ ] 4. Directorio `db/migration/` no existe *(Flyway no usado)*.
+- [ ] 5. Script `V1__crear_esquema_inicial.sql` no existe *(Hibernate lo genera automáticamente)*.
+- [x] 6. `application.properties` configurado con URL de PostgreSQL y Redis.
+- [ ] 7. Tests de conexión pendientes.
+- [ ] 8. Diagrama ER pendiente.
+- [ ] 9. `mvn verify` pendiente *(requiere BD activa)*.
 - [ ] 9. Verificar que `mvn verify` pasa con el pipeline CI activo.

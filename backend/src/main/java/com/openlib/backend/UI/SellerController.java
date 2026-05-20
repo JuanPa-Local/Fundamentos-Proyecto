@@ -55,9 +55,11 @@ public class SellerController implements Initializable {
     private File selectedFile;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
+    private final ViewFactory viewFactory;
 
-    public SellerController(ConfigurableApplicationContext springContext) {
+    public SellerController(ConfigurableApplicationContext springContext, ViewFactory viewFactory) {
         this.springContext = springContext;
+        this.viewFactory = viewFactory;
     }
 
     @Override
@@ -68,8 +70,8 @@ public class SellerController implements Initializable {
         ));
 
         // Mostrar nombre/email del seller en sesión
-        if (!SessionManager.getEmail().isEmpty()) {
-            sellerNameLabel.setText(SessionManager.getEmail());
+        if (!SessionManager.getInstance().getEmail().isEmpty()) {
+            sellerNameLabel.setText(SessionManager.getInstance().getEmail());
         }
 
         configurarColumnas();
@@ -117,8 +119,8 @@ public class SellerController implements Initializable {
         new Thread(() -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/books/my?email=" + SessionManager.getEmail()))
-                    .header("Authorization", SessionManager.bearerHeader())
+                        .uri(URI.create("http://localhost:8080/api/books/my?email=" + SessionManager.getInstance().getEmail()))
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .GET()
                     .build();
 
@@ -202,7 +204,7 @@ public class SellerController implements Initializable {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/books"))
                     .header("Content-Type", "application/json")
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
@@ -255,7 +257,7 @@ public class SellerController implements Initializable {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/books/isbn/" + isbn))
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .DELETE()
                     .build();
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -275,8 +277,8 @@ public class SellerController implements Initializable {
 
     @FXML
     private void handleLogout() {
-        SessionManager.clear();
-        cambiarPantalla("/views/main-view.fxml");
+        SessionManager.getInstance().clear();
+        viewFactory.showView("/views/main-view.fxml", (Stage) titleField.getScene().getWindow());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -351,19 +353,5 @@ public class SellerController implements Initializable {
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    private void cambiarPantalla(String fxmlPath) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(springContext::getBean);
-            Parent root = loader.load();
-            Stage stage = (Stage) titleField.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                getClass().getResource("/styles/global.css").toExternalForm()
-            );
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }

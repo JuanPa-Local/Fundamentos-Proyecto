@@ -137,16 +137,16 @@ ALTER TABLE usuario
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el Value Object `PerfilUsuario` en `domain/user/`.
-- [ ] 2. Escribir `PerfilUsuarioTest` (debe fallar).
-- [ ] 3. Verificar que `PerfilUsuarioTest` pasa.
-- [ ] 4. Agregar `actualizarPerfil()` y `getPerfil()` a la entidad `Usuario`.
-- [ ] 5. Ampliar `UsuarioTest` y verificar.
-- [ ] 6. Agregar `buscarPorId()` a la interface `UsuarioRepository`.
-- [ ] 7. Escribir `VerPerfilUseCaseTest` y `ActualizarPerfilUseCaseTest` con Mockito.
-- [ ] 8. Implementar ambos casos de uso y verificar tests.
-- [ ] 9. Crear el script `V3__agregar_perfil_usuario.sql`.
-- [ ] 10. Actualizar `UsuarioJpaEntity` y `UsuarioMapper`.
-- [ ] 11. Ampliar `UsuarioRepositoryAdapterTest` y verificar.
-- [ ] 12. Crear `perfil-view.fxml` y `PerfilController.java`.
-- [ ] 13. Verificar que `mvn verify` pasa completo.
+- [ ] 1. `PerfilUsuario` Value Object no creado *(datos de perfil no están implementados como Value Object)*.
+- [ ] 2. `PerfilUsuarioTest` no creado.
+- [ ] 3. Pendiente.
+- [ ] 4. `actualizarPerfil()` y `getPerfil()` no agregados a `User`.
+- [ ] 5. Tests ampliados pendientes.
+- [x] 6. `UserRepository.findById()` ya disponible a través de `JpaRepository`.
+- [ ] 7. `VerPerfilUseCaseTest` y `ActualizarPerfilUseCaseTest` no creados.
+- [ ] 8. Casos de uso de perfil no implementados *(funcionalidad de perfil no existe en el sistema actual)*.
+- [ ] 9. Script `V3__agregar_perfil_usuario.sql` no existe.
+- [ ] 10. No aplica *(sin mapper separado)*.
+- [ ] 11. Tests de repositorio pendientes.
+- [ ] 12. `perfil-view.fxml` y `PerfilController.java` no creados.
+- [ ] 13. `mvn verify` pendiente.

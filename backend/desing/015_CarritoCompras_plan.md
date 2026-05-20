@@ -156,16 +156,17 @@ Configurar `Jackson2JsonRedisSerializer` o `GenericJackson2JsonRedisSerializer` 
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear `ItemCarrito` (Value Object) y las excepciones en `domain/order/`.
-- [ ] 2. Escribir `CarritoTest` (debe fallar).
-- [ ] 3. Crear la entidad `Carrito` con todos sus comportamientos.
-- [ ] 4. Verificar que `CarritoTest` pasa.
-- [ ] 5. Definir las interfaces `CarritoRepository` y `BibliotecaRepository` (provisional).
-- [ ] 6. Escribir los tests de `AgregarItemAlCarritoUseCase`, `VerCarritoUseCase` y `EliminarItemDelCarritoUseCase`.
-- [ ] 7. Implementar los tres casos de uso y verificar.
-- [ ] 8. Implementar `RedisCarritoRepository` con serialización JSON.
-- [ ] 9. Escribir y verificar `RedisCarritoRepositoryTest` con TestContainers.
-- [ ] 10. Crear adaptador provisional de `BibliotecaRepository`.
-- [ ] 11. Crear `carrito-view.fxml` y `CarritoController.java`.
-- [ ] 12. Actualizar `DetalleLibroController` con el botón "Agregar al carrito".
+- [ ] 1. `ItemCarrito` Value Object no creado.
+- [ ] 2. `CarritoTest` no creado.
+- [ ] 3. Entidad `Carrito` no creada *(flujo actual va directo de libro a orden sin carrito)*.
+- [ ] 4. Tests pendientes.
+- [ ] 5. `CarritoRepository` y `BibliotecaRepository` interfaces no creadas.
+- [ ] 6. Tests de casos de uso pendientes.
+- [ ] 7. Casos de uso de carrito no implementados.
+- [ ] 8. `RedisCarritoRepository` no implementado.
+- [ ] 9. Tests de integración pendientes.
+- [ ] 10. `BibliotecaRepository` provisional no creado.
+- [ ] 11. `carrito-view.fxml` y `CarritoController.java` no creados.
+- [ ] 12. `DetalleLibroController` no existe aún.
+- [ ] 13. `mvn verify` pendiente.
 - [ ] 13. Verificar que `mvn verify` pasa completo.

@@ -134,14 +134,15 @@ public interface CheckoutSessionGateway {
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear `DireccionFacturacion`, `SesionCheckout` y `CampoDireccionObligatorioException` en `domain/order/`.
-- [ ] 2. Escribir `DireccionFacturacionTest` (debe fallar).
-- [ ] 3. Implementar el Value Object y verificar tests.
-- [ ] 4. Definir la interface `CheckoutSessionGateway` en `domain/order/`.
-- [ ] 5. Escribir los tests de los casos de uso (deben fallar).
-- [ ] 6. Implementar `GuardarDireccionCheckoutUseCase` y `ObtenerDireccionPrerrellenaUseCase`.
-- [ ] 7. Verificar que los tests pasan.
-- [ ] 8. Implementar `RedisCheckoutSessionGateway`.
-- [ ] 9. Escribir y verificar `RedisCheckoutSessionGatewayTest`.
-- [ ] 10. Crear `checkout-direccion-view.fxml` y `CheckoutDireccionController.java`.
+- [ ] 1. `DireccionFacturacion`, `SesionCheckout` y `CampoDireccionObligatorioException` no creados.
+- [ ] 2. `DireccionFacturacionTest` no creado.
+- [ ] 3. Pendiente.
+- [ ] 4. `CheckoutSessionGateway` interface no creada.
+- [ ] 5. Tests de casos de uso pendientes.
+- [ ] 6. `GuardarDireccionCheckoutUseCase` y `ObtenerDireccionPrerrellenaUseCase` no implementados.
+- [ ] 7. Pendiente.
+- [ ] 8. `RedisCheckoutSessionGateway` no implementado.
+- [ ] 9. Tests de integración pendientes.
+- [ ] 10. `checkout-direccion-view.fxml` y `CheckoutDireccionController.java` no creados.
+- [ ] 11. `mvn verify` pendiente.
 - [ ] 11. Verificar que `mvn verify` pasa completo.

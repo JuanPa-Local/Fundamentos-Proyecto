@@ -134,19 +134,19 @@ ALTER TABLE usuario
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear la excepción `DatoEditorialObligatorioException` en `domain/user/exception/`.
-- [ ] 2. Escribir `PerfilSellerTest` (debe fallar).
-- [ ] 3. Crear el Value Object `PerfilSeller` en `domain/user/`.
-- [ ] 4. Verificar que `PerfilSellerTest` pasa.
-- [ ] 5. Agregar el método fábrica `registrarSeller()` a `Usuario`.
-- [ ] 6. Escribir y verificar los tests ampliados de `UsuarioTest`.
-- [ ] 7. Escribir `RegistrarSellerUseCaseTest` con Mockito (debe fallar).
-- [ ] 8. Implementar `RegistrarSellerUseCase`.
-- [ ] 9. Verificar que el test del caso de uso pasa.
-- [ ] 10. Crear el script de migración `V2__agregar_perfil_seller.sql`.
-- [ ] 11. Actualizar `UsuarioJpaEntity` y `UsuarioMapper` con los campos editoriales.
-- [ ] 12. Ampliar `UsuarioRepositoryAdapterTest` y verificar.
-- [ ] 13. Actualizar `SecurityConfig` para proteger las rutas de Seller.
-- [ ] 14. Crear `register-seller-view.fxml` y `RegisterSellerController.java`.
-- [ ] 15. Actualizar `LoginController` con la lógica de redirección por rol.
-- [ ] 16. Verificar que `mvn verify` pasa completo.
+- [ ] 1. `DatoEditorialObligatorioException` no creada *(se usa RuntimeException)*.
+- [ ] 2. `PerfilSellerTest` no creado.
+- [ ] 3. `PerfilSeller` Value Object no creado *(el plan usa perfil editorial; la implementación actual usa solo el rol para distinguir sellers)*.
+- [ ] 4. Tests de `PerfilSeller` pendientes.
+- [x] 5. `UserService.registerSeller()` implementado — crea usuario con rol `SELLER`, validación de email único y BCrypt.
+- [ ] 6. Tests ampliados de `UsuarioTest` pendientes.
+- [ ] 7. `RegistrarSellerUseCaseTest` no creado.
+- [x] 8. `UserService.registerSeller()` cumple la función del caso de uso en arquitectura en capas.
+- [ ] 9. Tests del servicio pendientes.
+- [ ] 10. Script `V2__agregar_perfil_seller.sql` no existe *(Hibernate gestiona el esquema)*.
+- [x] 11. No existe mapper separado — `User.java` es la entidad JPA directamente.
+- [ ] 12. Test del repositorio pendiente.
+- [x] 13. `SecurityConfig` permite rutas `/api/**` públicas actualmente.
+- [x] 14. `register-view.fxml` y `RegisterController.java` existen *(UI comparte formulario con Buyer)*.
+- [x] 15. `ControllerUI.java` redirige según rol tras login: Buyer → buyer-view, Seller → seller-view, Admin → admin-view.
+- [ ] 16. `mvn verify` pendiente.

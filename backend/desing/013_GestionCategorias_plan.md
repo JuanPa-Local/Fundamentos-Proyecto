@@ -172,14 +172,15 @@ Al crear, editar o eliminar una categoría o etiqueta, invocar `CatalogoCache.in
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear entidades `Categoria` y `Etiqueta` con sus métodos fábrica y excepciones.
-- [ ] 2. Escribir `CategoriaTest` y `EtiquetaTest` (deben fallar).
-- [ ] 3. Verificar que los tests de dominio pasan.
-- [ ] 4. Definir las interfaces `CategoriaRepository` y `EtiquetaRepository`.
-- [ ] 5. Escribir los tests de `GestionarCategoriaUseCase` y `GestionarEtiquetaUseCase`.
-- [ ] 6. Implementar ambos casos de uso y verificar.
-- [ ] 7. Crear el script `V8__crear_tablas_categoria_etiqueta.sql`.
-- [ ] 8. Crear las entidades JPA, repositorios Spring y adaptadores.
-- [ ] 9. Escribir y verificar los tests de repositorio.
-- [ ] 10. Actualizar `admin-view.fxml` y `AdminController.java`.
+- [ ] 1. Entidades `Categoria` y `Etiqueta` no creadas — categoría es `String category` en `Book.java`.
+- [ ] 2. `CategoriaTest` y `EtiquetaTest` no creados.
+- [ ] 3. Tests pendientes.
+- [ ] 4. `CategoriaRepository` y `EtiquetaRepository` interfaces no creadas.
+- [ ] 5. Tests de casos de uso pendientes.
+- [ ] 6. `GestionarCategoriaUseCase` y `GestionarEtiquetaUseCase` no implementados.
+- [ ] 7. Script `V8__crear_tablas_categoria_etiqueta.sql` no existe.
+- [ ] 8. Entidades JPA, repositorios y adaptadores para categorías y etiquetas no creados.
+- [ ] 9. Tests de repositorio pendientes.
+- [x] 10. `admin-view.fxml` y `AdminController.java` existen *(gestión de categorías como strings, no como entidades independientes)*.
+- [ ] 11. `mvn verify` pendiente.
 - [ ] 11. Verificar que `mvn verify` pasa completo.

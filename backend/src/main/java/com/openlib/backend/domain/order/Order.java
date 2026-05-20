@@ -6,8 +6,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 @Entity
 @Table(name = "orders")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -24,9 +31,14 @@ public class Order {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    @Builder.Default
     @Column(length = 30)
     private String status = "COMPLETED";
 
+    @Builder.Default
+    private Double totalPrice = 0.0;
+
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime orderedAt = LocalDateTime.now();
 
@@ -45,4 +57,7 @@ public class Order {
 
     public LocalDateTime getOrderedAt() { return orderedAt; }
     public void setOrderedAt(LocalDateTime orderedAt) { this.orderedAt = orderedAt; }
+
+    public Double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
 }

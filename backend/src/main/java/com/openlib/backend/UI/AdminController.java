@@ -81,9 +81,11 @@ public class AdminController implements Initializable {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
+    private final ViewFactory viewFactory;
 
-    public AdminController(ConfigurableApplicationContext springContext) {
+    public AdminController(ConfigurableApplicationContext springContext, ViewFactory viewFactory) {
         this.springContext = springContext;
+        this.viewFactory = viewFactory;
     }
 
     @Override
@@ -352,7 +354,7 @@ public class AdminController implements Initializable {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/users/" + id))
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .DELETE()
                     .build();
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -379,7 +381,7 @@ public class AdminController implements Initializable {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/books/isbn/" + isbn))
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .DELETE()
                     .build();
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -396,8 +398,8 @@ public class AdminController implements Initializable {
 
     @FXML
     private void handleLogout() {
-        SessionManager.clear();
-        cambiarPantalla("/views/main-view.fxml");
+        SessionManager.getInstance().clear();
+        viewFactory.showView("/views/main-view.fxml", (Stage) lblUsuarios.getScene().getWindow());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -517,25 +519,11 @@ public class AdminController implements Initializable {
     private HttpResponse<String> get(String path) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:8080" + path))
-            .header("Authorization", SessionManager.bearerHeader())
+            .header("Authorization", SessionManager.getInstance().bearerHeader())
             .GET()
             .build();
         return httpClient.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
-    private void cambiarPantalla(String fxmlPath) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(springContext::getBean);
-            Parent root = loader.load();
-            Stage stage = (Stage) lblUsuarios.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                getClass().getResource("/styles/global.css").toExternalForm()
-            );
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }

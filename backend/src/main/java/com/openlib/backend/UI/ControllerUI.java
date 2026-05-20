@@ -29,14 +29,16 @@ public class ControllerUI {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
+    private final ViewFactory viewFactory;
 
-    public ControllerUI(ConfigurableApplicationContext springContext) {
+    public ControllerUI(ConfigurableApplicationContext springContext, ViewFactory viewFactory) {
         this.springContext = springContext;
+        this.viewFactory = viewFactory;
     }
 
     @FXML
     public void goToRegister() {
-        cambiarPantalla("/views/register-view.fxml");
+        viewFactory.showView("/views/register-view.fxml", (Stage) loginButton.getScene().getWindow());
     }
 
     @FXML
@@ -79,15 +81,15 @@ public class ControllerUI {
                         // Extraer el rol del JSON de respuesta
                         // Formato esperado: {"token":"...","role":"ADMIN","fullName":"..."}
                         String role = extraerCampoJson(response.body(), "role");
-                        SessionManager.setEmail(email);
-                        SessionManager.setRole(role);
+                        SessionManager.getInstance().setEmail(email);
+                        SessionManager.getInstance().setRole(role);
 
                         if ("ADMIN".equalsIgnoreCase(role)) {
-                            cambiarPantalla("/views/admin-view.fxml");
+                            viewFactory.showRoleView(role, (Stage) loginButton.getScene().getWindow());
                         } else if ("SELLER".equalsIgnoreCase(role)) {
-                            cambiarPantalla("/views/seller-view.fxml");
+                            viewFactory.showRoleView(role, (Stage) loginButton.getScene().getWindow());
                         } else {
-                            cambiarPantalla("/views/buyer-view.fxml");
+                            viewFactory.showRoleView(role, (Stage) loginButton.getScene().getWindow());
                         }
                     } else if (response.statusCode() == 401) {
                         errorLabel.setText("Correo o contraseña incorrectos.");
@@ -103,7 +105,7 @@ public class ControllerUI {
                     loginButton.setDisable(false);
                     loginButton.setText("Iniciar Sesión");
                     // Backend no disponible: enrutar por email para pruebas
-                    SessionManager.setEmail(email);
+                    SessionManager.getInstance().setEmail(email);
                     enrutarPorEmailFallback(email);
                 });
             }
@@ -116,14 +118,14 @@ public class ControllerUI {
      */
     private void enrutarPorEmailFallback(String email) {
         if (email.contains("admin")) {
-            SessionManager.setRole("ADMIN");
-            cambiarPantalla("/views/admin-view.fxml");
+            SessionManager.getInstance().setRole("ADMIN");
+            viewFactory.showRoleView("ADMIN", (Stage) loginButton.getScene().getWindow());
         } else if (email.contains("seller")) {
-            SessionManager.setRole("SELLER");
-            cambiarPantalla("/views/seller-view.fxml");
+            SessionManager.getInstance().setRole("SELLER");
+            viewFactory.showRoleView("SELLER", (Stage) loginButton.getScene().getWindow());
         } else {
-            SessionManager.setRole("BUYER");
-            cambiarPantalla("/views/buyer-view.fxml");
+            SessionManager.getInstance().setRole("BUYER");
+            viewFactory.showRoleView("BUYER", (Stage) loginButton.getScene().getWindow());
         }
     }
 
@@ -142,20 +144,5 @@ public class ControllerUI {
         return json.substring(inicio + 1, fin);
     }
 
-    private void cambiarPantalla(String fxmlPath) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(springContext::getBean);
-            Parent root = loader.load();
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                getClass().getResource("/styles/global.css").toExternalForm()
-            );
-            stage.setScene(scene);
-        } catch (IOException e) {
-            System.err.println("Error cargando la vista: " + fxmlPath);
-            e.printStackTrace();
-        }
-    }
+
 }

@@ -121,12 +121,13 @@ La interface `CatalogoCache.invalidar(patron)` (ya definida en US-010) se llama 
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Extender `FiltroCatalogo` con `categoria` y `etiquetas`, añadir Builder.
-- [ ] 2. Escribir `FiltroCatalogoTest` y ampliar `LibroRepositoryAdapterTest` (deben fallar).
-- [ ] 3. Crear `LibroSpecification.java` con los métodos estáticos de filtrado.
-- [ ] 4. Actualizar `LibroRepositoryAdapter` para componer las especificaciones dinámicamente.
-- [ ] 5. Verificar que todos los tests de repositorio pasan.
-- [ ] 6. Ampliar el test de `BuscarCatalogoUseCase` y verificar que pasa.
-- [ ] 7. Actualizar `buyer-view.fxml` con el panel de filtros.
-- [ ] 8. Actualizar `BuyerController.java` con la lógica de aplicar y limpiar filtros.
+- [ ] 1. `FiltroCatalogo` con Builder no creado *(filtros implementados como parámetros simples)*.
+- [ ] 2. `FiltroCatalogoTest` no creado; tests de repositorio con filtros pendientes.
+- [ ] 3. `LibroSpecification.java` no creado *(filtros implementados con queries JPQL directas en el repositorio)*.
+- [x] 4. `BookRepository.searchByTerminoAndCategory()` y `findByCategoryAndStatus()` implementados; `BookService.searchCatalogWithFilters()` compone los filtros dinámicamente.
+- [ ] 5. Tests de repositorio pendientes.
+- [ ] 6. Test de `BuscarCatalogoUseCase` pendiente.
+- [x] 7. `buyer-view.fxml` existe con campo de búsqueda; panel de filtros de categoría pendiente de UI.
+- [x] 8. `GET /api/books/catalog/filter?q=&category=` implementado en `BookController`.
+- [ ] 9. `mvn verify` pendiente.
 - [ ] 9. Verificar que `mvn verify` pasa completo.

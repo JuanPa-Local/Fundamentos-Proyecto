@@ -38,9 +38,11 @@ public class BuyerController implements Initializable {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ConfigurableApplicationContext springContext;
+    private final ViewFactory viewFactory;
 
-    public BuyerController(ConfigurableApplicationContext springContext) {
+    public BuyerController(ConfigurableApplicationContext springContext, ViewFactory viewFactory) {
         this.springContext = springContext;
+        this.viewFactory = viewFactory;
     }
 
     @Override
@@ -52,8 +54,8 @@ public class BuyerController implements Initializable {
         sortCombo.setOnAction(e -> ordenarYMostrar());
 
         // Mostrar email del usuario en sesión
-        if (!SessionManager.getEmail().isEmpty()) {
-            userLabel.setText(SessionManager.getEmail());
+        if (!SessionManager.getInstance().getEmail().isEmpty()) {
+            userLabel.setText(SessionManager.getInstance().getEmail());
         }
 
         cargarLibros(null, null);
@@ -87,7 +89,7 @@ public class BuyerController implements Initializable {
 
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url.toString()))
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .GET()
                     .build();
 
@@ -237,7 +239,7 @@ public class BuyerController implements Initializable {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/orders/my"))
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .GET()
                     .build();
                 HttpResponse<String> response = httpClient.send(
@@ -277,7 +279,7 @@ public class BuyerController implements Initializable {
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/api/orders"))
                     .header("Content-Type", "application/json")
-                    .header("Authorization", SessionManager.bearerHeader())
+                    .header("Authorization", SessionManager.getInstance().bearerHeader())
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
@@ -321,8 +323,8 @@ public class BuyerController implements Initializable {
 
     @FXML
     private void handleLogout() {
-        SessionManager.clear();
-        cambiarPantalla("/views/main-view.fxml");
+        SessionManager.getInstance().clear();
+        viewFactory.showView("/views/main-view.fxml", (Stage) searchField.getScene().getWindow());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -414,19 +416,5 @@ public class BuyerController implements Initializable {
         }
     }
 
-    private void cambiarPantalla(String fxmlPath) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(springContext::getBean);
-            Parent root = loader.load();
-            Stage stage = (Stage) searchField.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                getClass().getResource("/styles/global.css").toExternalForm()
-            );
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }

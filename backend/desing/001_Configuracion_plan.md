@@ -92,10 +92,10 @@ En esta historia la verificación es estructural, no de código de producción:
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear el repositorio en GitHub con ramas `main` y `develop`.
-- [ ] 2. Configurar la política de PR: revisión obligatoria de al menos 1 integrante.
-- [ ] 3. Crear el archivo `.github/workflows/ci.yml` con el pipeline básico.
-- [ ] 4. Crear el `.gitignore` para Java/Maven/IntelliJ.
-- [ ] 5. Redactar el `README.md` con instrucciones completas de setup.
-- [ ] 6. Verificar que el pipeline CI se activa y pasa en un PR de prueba.
-- [ ] 7. Comunicar al equipo la convención de nombres de ramas (`feature/US-XXX`).
+- [x] 1. Crear el repositorio en GitHub con ramas `main` y `develop`. *(repo existente)*
+- [ ] 2. Configurar la política de PR: revisión obligatoria de al menos 1 integrante. *(externo — configurar en GitHub)*
+- [x] 3. Crear el archivo `.github/workflows/ci.yml` con el pipeline básico.
+- [x] 4. `.gitignore` para Java/Maven ya existe en el repositorio.
+- [x] 5. Redactar el `README.md` con instrucciones completas de setup y glosario DDD.
+- [ ] 6. Verificar que el pipeline CI se activa y pasa en un PR de prueba. *(requiere push a GitHub)*
+- [ ] 7. Comunicar al equipo la convención de nombres de ramas. *(externo — comunicación de equipo)*

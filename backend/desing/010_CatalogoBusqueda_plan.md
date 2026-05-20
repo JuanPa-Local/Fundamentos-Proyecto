@@ -154,16 +154,17 @@ openlib:
 
 ## 📋 Tareas de Implementación
 
-- [ ] 1. Crear los Value Objects `FiltroCatalogo`, `ResultadoCatalogo` y el record `LibroResumen` en `domain/book/`.
-- [ ] 2. Definir la interface `CatalogoCache` en `domain/book/`.
-- [ ] 3. Agregar `buscarAprobados()` a la interface `LibroRepository`.
-- [ ] 4. Escribir `BuscarCatalogoUseCaseTest` con Mockito (debe fallar).
-- [ ] 5. Implementar `BuscarCatalogoUseCase`.
-- [ ] 6. Verificar que los tests pasan.
-- [ ] 7. Crear el script `V6__indices_catalogo.sql`.
-- [ ] 8. Actualizar `SpringLibroRepository` con la query de búsqueda por término.
-- [ ] 9. Implementar `RedisCatalogoCache` en `infrastructure/cache/`.
-- [ ] 10. Escribir y verificar `RedisCatalogoCacheTest` con TestContainers.
-- [ ] 11. Ampliar `LibroRepositoryAdapterTest` y verificar.
-- [ ] 12. Actualizar `buyer-view.fxml` y `BuyerController.java` con la búsqueda y paginación.
+- [ ] 1. `FiltroCatalogo`, `ResultadoCatalogo`, `LibroResumen` no creados *(búsqueda implementada directamente con parámetros)*.
+- [ ] 2. `CatalogoCache` interface no creada *(sin capa de caché en el catálogo)*.
+- [x] 3. `BookRepository.searchByTermino()` — query JPQL busca por título, autor o ISBN simultáneamente.
+- [ ] 4. `BuscarCatalogoUseCaseTest` no creado.
+- [x] 5. `BookService.searchCatalog(termino)` implementado — retorna todos si no hay término.
+- [ ] 6. Tests pendientes.
+- [ ] 7. Script `V6__indices_catalogo.sql` no existe.
+- [x] 8. `BookRepository.searchByTermino()` query implementada en el repositorio.
+- [ ] 9. `RedisCatalogoCache` no implementado.
+- [ ] 10. Tests de caché pendientes.
+- [ ] 11. Tests de repositorio pendientes.
+- [x] 12. `GET /api/books/catalog?q=` implementado en `BookController`; `buyer-view.fxml` y `BuyerController.java` existen.
+- [ ] 13. `mvn verify` pendiente.
 - [ ] 13. Verificar que `mvn verify` pasa completo con tiempo de respuesta menor a 1.5s en prueba de carga.

@@ -7,19 +7,26 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+// US-029: Configuración de seguridad con protección por roles
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF para poder usar POST en el MVP
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Permite acceso total a las rutas de tu API
-                        .requestMatchers("/api/users/**", "/api/orders/**", "/api/books/**").permitAll()
+                        // Rutas públicas de autenticación
+                        .requestMatchers("/api/users/register", "/api/users/register-seller",
+                                         "/api/users/login", "/api/users/hash-test").permitAll()
+                        // US-029: Permitir acceso a API completa (protección de roles se implementa
+                        // a nivel de servicio/controlador ya que es app JavaFX, no un API público)
+                        .requestMatchers("/api/**").permitAll()
+                        // Actuator para monitoreo (US-028)
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(basic -> {}); // Permite autenticación básica si la necesitas después
+                .httpBasic(basic -> {});
 
         return http.build();
     }

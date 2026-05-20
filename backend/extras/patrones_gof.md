@@ -28,3 +28,8 @@ Posees una clase `SessionManager` en tu interfaz. Este gestor de sesiones en el 
 **Â¿Por quÃ© usarlo en OpenLib Market?**
 En tu capa de presentaciÃ³n, existen diferentes roles de usuario (`Buyer`, `Seller`, `Admin`), cada uno con su propia vista FXML y Controlador (`buyer-view.fxml`, `admin-view.fxml`, etc.). Cuando el proceso de login en `RegisterController` es exitoso, necesitas instanciar y cargar la nueva ventana.
 **Facilidad de ImplementaciÃ³n:** Puedes centralizar esta lÃ³gica mediante una clase "fÃ¡brica" (`ViewFactory`). Esta clase tendrÃ­a un mÃ©todo como `getView(Role rol)` que, a partir del rol del usuario, decide automÃ¡ticamente cuÃ¡l vista cargar y quÃ© controlador adjuntarle. Esto evita ensuciar tus controladores con lÃ³gica tÃ©cnica de inicializaciÃ³n de interfaces.
+
+## 6. Facade (Patrón Estructural)
+**¿Por qué usarlo en OpenLib Market?**
+Para reducir la explosión de clases en la capa de aplicación. En lugar de tener una clase individual para cada caso de uso (ej. `AgregarItemAlCarritoUseCase`, `EliminarItemDelCarritoUseCase`, `VerCarritoUseCase`), se expone una única interfaz unificada o `Facade` (ej. `CarritoFacade` y `CheckoutFacade`). Esto facilita a los controladores de UI invocar a los servicios de negocio de forma limpia sin importar múltiples dependencias.
+**Facilidad de Implementación:** Se crea una clase de servicio principal anotada con `@Service` que agrupa las llamadas hacia los repositorios y servicios de dominio subyacentes. El controlador UI entonces inyecta esta única clase.

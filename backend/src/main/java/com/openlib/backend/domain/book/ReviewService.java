@@ -1,7 +1,11 @@
 package com.openlib.backend.domain.book;
 
+import com.openlib.backend.domain.book.exception.LibroNoEncontradoException;
+import com.openlib.backend.domain.book.exception.ResenaNoEncontradaException;
+import com.openlib.backend.domain.book.exception.ResenaYaExisteException;
 import com.openlib.backend.domain.user.User;
 import com.openlib.backend.domain.user.UserRepository;
+import com.openlib.backend.domain.user.exception.UsuarioNoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -27,13 +31,13 @@ public class ReviewService {
     @Transactional
     public Review createReview(UUID userId, UUID bookId, int rating, String comment) {
         if (reviewRepository.existsByUserIdAndBookId(userId, bookId)) {
-            throw new RuntimeException("Ya has reseñado este libro.");
+            throw new ResenaYaExisteException("Ya has reseñado este libro.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsuarioNoEncontradoException(userId));
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+                .orElseThrow(() -> new LibroNoEncontradoException(bookId));
 
         Review review = new Review();
         review.setUser(user);
@@ -66,7 +70,7 @@ public class ReviewService {
     @Transactional
     public Review reportReview(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Reseña no encontrada"));
+                .orElseThrow(() -> new ResenaNoEncontradaException(reviewId));
         review.reportar();
         return reviewRepository.save(review);
     }
@@ -75,7 +79,7 @@ public class ReviewService {
     @Transactional
     public Review hideReview(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Reseña no encontrada"));
+                .orElseThrow(() -> new ResenaNoEncontradaException(reviewId));
         review.ocultar();
         return reviewRepository.save(review);
     }
@@ -84,7 +88,7 @@ public class ReviewService {
     @Transactional
     public Review reactivateReview(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Reseña no encontrada"));
+                .orElseThrow(() -> new ResenaNoEncontradaException(reviewId));
         review.reactivar();
         return reviewRepository.save(review);
     }

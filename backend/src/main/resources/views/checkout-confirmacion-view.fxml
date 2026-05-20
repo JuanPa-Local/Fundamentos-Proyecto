@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="com.openlib.backend.UI.CheckoutConfirmacionController"
+      spacing="20" alignment="CENTER" stylesheets="@../styles/global.css">
+
+    <Label text="Confirmación de Orden" styleClass="title-label" style="-fx-font-size: 24px;"/>
+    
+    <Label fx:id="statusLabel" text="Procesando orden..." />
+    
+    <Button text="Ir a Mi Biblioteca" onAction="#goToBiblioteca" styleClass="primary-btn"/>
+
+</VBox>

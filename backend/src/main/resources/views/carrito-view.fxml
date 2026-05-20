@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="com.openlib.backend.UI.CarritoController"
+      spacing="15" alignment="CENTER" stylesheets="@../styles/global.css">
+
+    <Label text="Mi Carrito de Compras" styleClass="title-label"/>
+    
+    <Label fx:id="totalItemsLabel" text="Total items: 0" styleClass="subtitle-label"/>
+    
+    <Label fx:id="emptyCartLabel" text="Tu carrito está vacío." textFill="gray" visible="false"/>
+    
+    <ListView fx:id="itemsListView" prefHeight="300" prefWidth="400"/>
+    
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Volver al Catálogo" onAction="#goBack" styleClass="secondary-btn"/>
+        <Button fx:id="proceedToCheckoutBtn" text="Proceder al Pago" onAction="#procedToCheckout" styleClass="primary-btn"/>
+    </HBox>
+
+</VBox>

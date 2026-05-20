@@ -63,6 +63,31 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
     }
 
+    @ExceptionHandler(LibroYaEnBibliotecaException.class)
+    public ResponseEntity<Map<String, String>> handleLibroYaEnBiblioteca(LibroYaEnBibliotecaException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(ResenaYaExisteException.class)
+    public ResponseEntity<Map<String, String>> handleResenaYaExiste(ResenaYaExisteException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(ResenaNoEncontradaException.class)
+    public ResponseEntity<Map<String, String>> handleResenaNoEncontrada(ResenaNoEncontradaException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(LibroYaEnFavoritosException.class)
+    public ResponseEntity<Map<String, String>> handleLibroYaEnFavoritos(LibroYaEnFavoritosException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(LibroNoEnFavoritosException.class)
+    public ResponseEntity<Map<String, String>> handleLibroNoEnFavoritos(LibroNoEnFavoritosException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+    }
+
     // Catch-all para excepciones no manejadas
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleGeneric(RuntimeException e) {

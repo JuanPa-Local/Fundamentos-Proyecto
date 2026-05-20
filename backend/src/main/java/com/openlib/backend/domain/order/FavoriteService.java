@@ -2,8 +2,12 @@ package com.openlib.backend.domain.order;
 
 import com.openlib.backend.domain.book.Book;
 import com.openlib.backend.domain.book.BookRepository;
+import com.openlib.backend.domain.book.exception.LibroNoEncontradoException;
+import com.openlib.backend.domain.order.exception.LibroNoEnFavoritosException;
+import com.openlib.backend.domain.order.exception.LibroYaEnFavoritosException;
 import com.openlib.backend.domain.user.User;
 import com.openlib.backend.domain.user.UserRepository;
+import com.openlib.backend.domain.user.exception.UsuarioNoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -29,13 +33,13 @@ public class FavoriteService {
     @Transactional
     public Favorite addFavorite(UUID userId, UUID bookId) {
         if (favoriteRepository.existsByUserIdAndBookId(userId, bookId)) {
-            throw new RuntimeException("El libro ya está en favoritos.");
+            throw new LibroYaEnFavoritosException("El libro ya está en favoritos.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsuarioNoEncontradoException(userId));
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+                .orElseThrow(() -> new LibroNoEncontradoException(bookId));
 
         Favorite favorite = new Favorite();
         favorite.setUser(user);
@@ -47,7 +51,7 @@ public class FavoriteService {
     @Transactional
     public void removeFavorite(UUID userId, UUID bookId) {
         if (!favoriteRepository.existsByUserIdAndBookId(userId, bookId)) {
-            throw new RuntimeException("El libro no está en favoritos.");
+            throw new LibroNoEnFavoritosException("El libro no está en favoritos.");
         }
         favoriteRepository.deleteByUserIdAndBookId(userId, bookId);
     }

@@ -22,6 +22,8 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
+import com.openlib.backend.application.usecase.AgregarItemAlCarritoUseCase;
 
 @Component
 public class BuyerController implements Initializable {
@@ -194,9 +196,9 @@ public class BuyerController implements Initializable {
         Label priceLabel = new Label("$0.00 — Gratis");
         priceLabel.setStyle("-fx-text-fill: #03dac6; -fx-font-size: 12px; -fx-font-weight: bold;");
 
-        Button downloadBtn = new Button("Descargar");
-        downloadBtn.setMaxWidth(Double.MAX_VALUE);
-        downloadBtn.setStyle(
+        Button addCartBtn = new Button("Agregar al Carrito");
+        addCartBtn.setMaxWidth(Double.MAX_VALUE);
+        addCartBtn.setStyle(
             "-fx-background-color: #bb86fc;" +
             "-fx-text-fill: #000000;" +
             "-fx-font-weight: bold;" +
@@ -204,9 +206,9 @@ public class BuyerController implements Initializable {
             "-fx-padding: 8 0;" +
             "-fx-cursor: hand;"
         );
-        downloadBtn.setOnAction(e -> descargarLibro(id, titulo));
+        addCartBtn.setOnAction(e -> agregarAlCarrito(id, titulo));
 
-        info.getChildren().addAll(titleLabel, authorLabel, categoryBadge, priceLabel, downloadBtn);
+        info.getChildren().addAll(titleLabel, authorLabel, categoryBadge, priceLabel, addCartBtn);
         card.getChildren().addAll(coverPane, info);
 
         return card;
@@ -232,42 +234,24 @@ public class BuyerController implements Initializable {
     }
 
     @FXML
-    private void goToBiblioteca() {
-        statusLabel.setText("Cargando tu biblioteca...");
-        // Obtener órdenes/compras del usuario actual
-        new Thread(() -> {
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/api/orders/my"))
-                    .header("Authorization", SessionManager.getInstance().bearerHeader())
-                    .GET()
-                    .build();
-                HttpResponse<String> response = httpClient.send(
-                    request, HttpResponse.BodyHandlers.ofString()
-                );
+    private void goToCarrito() {
+        viewFactory.showView("/views/carrito-view.fxml", (Stage) searchField.getScene().getWindow());
+    }
 
-                if (response.statusCode() == 200) {
-                    List<String[]> ordenes = parsearOrdenes(response.body());
-                    Platform.runLater(() -> {
-                        booksContainer.getChildren().clear();
-                        if (ordenes.isEmpty()) {
-                            statusLabel.setText("Tu biblioteca está vacía. ¡Descarga tu primer libro!");
-                        } else {
-                            for (String[] o : ordenes) {
-                                booksContainer.getChildren().add(
-                                    crearTarjetaLibro(o[1], "", "", o[0])
-                                );
-                            }
-                            statusLabel.setText("Mi Biblioteca — " + ordenes.size() + " libros");
-                        }
-                    });
-                } else {
-                    Platform.runLater(() -> statusLabel.setText("No se pudo cargar tu biblioteca."));
-                }
-            } catch (Exception ex) {
-                Platform.runLater(() -> statusLabel.setText("Biblioteca no disponible sin conexión."));
-            }
-        }).start();
+    @FXML
+    private void goToBiblioteca() {
+        viewFactory.showView("/views/biblioteca-view.fxml", (Stage) searchField.getScene().getWindow());
+    }
+
+    private void agregarAlCarrito(String bookId, String titulo) {
+        statusLabel.setText("Agregando " + titulo + " al carrito...");
+        try {
+            AgregarItemAlCarritoUseCase addUseCase = springContext.getBean(AgregarItemAlCarritoUseCase.class);
+            addUseCase.ejecutar(SessionManager.getInstance().getCurrentUser().getId(), UUID.fromString(bookId));
+            Platform.runLater(() -> statusLabel.setText("¡Libro agregado al carrito!"));
+        } catch (Exception ex) {
+            Platform.runLater(() -> statusLabel.setText("Error: " + ex.getMessage()));
+        }
     }
 
     private void descargarLibro(String bookId, String titulo) {

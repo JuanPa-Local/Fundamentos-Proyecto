@@ -2,8 +2,10 @@ package com.openlib.backend.domain.order;
 
 import com.openlib.backend.domain.book.Book;
 import com.openlib.backend.domain.book.BookRepository;
+import com.openlib.backend.domain.book.exception.LibroNoEncontradoException;
 import com.openlib.backend.domain.user.User;
 import com.openlib.backend.domain.user.UserRepository;
+import com.openlib.backend.domain.user.exception.UsuarioNoEncontradoException;
 import com.openlib.backend.domain.order.exception.LibroYaAdquiridoException;
 import com.openlib.backend.domain.order.exception.OrdenNoEncontradaException;
 import com.openlib.backend.domain.order.strategy.DiscountStrategy;
@@ -43,8 +45,8 @@ public class OrderService {
             throw new LibroYaAdquiridoException();
         }
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UsuarioNoEncontradoException(userId));
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new LibroNoEncontradoException(bookId));
 
         Order order = new Order();
         order.setUser(user);

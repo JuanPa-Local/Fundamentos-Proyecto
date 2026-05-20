@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLib Market - Tu Librería Digital</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">OpenLib <span>Market</span></div>
+        <nav>
+            <a href="login.html" class="btn btn-outline">Iniciar Sesión</a>
+            <a href="register.html" class="btn btn-primary">Registrarse</a>
+        </nav>
+    </header>
+
+    <main class="hero">
+        <div class="hero-content">
+            <h1>Descubre tu próximo gran libro</h1>
+            <p>Explora un catálogo inmenso, compra de forma segura y lee al instante. La mejor plataforma para autores y lectores.</p>
+            <a href="#catalog" class="btn btn-primary btn-large">Explorar Catálogo</a>
+        </div>
+    </main>
+
+    <section id="catalog" class="catalog-section">
+        <h2>Catálogo Destacado</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Buscar libros, autores...">
+            <button id="searchBtn" class="btn btn-primary">Buscar</button>
+        </div>
+        <div id="booksGrid" class="books-grid">
+            <!-- Libros renderizados vía JS -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 OpenLib Market. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/catalog.js"></script>
+</body>
+</html>

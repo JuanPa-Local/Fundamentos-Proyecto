@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - OpenLib Market</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo">OpenLib <span>Market</span></div>
+        <p style="color:var(--danger); font-size:0.8rem; margin-top:0.5rem;">Panel Administrador</p>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" id="nav-users">Usuarios</a>
+            <a href="#" id="nav-moderation">Moderación Libros</a>
+            <a href="#" id="nav-orders">Todas las Órdenes</a>
+            <a href="#" id="nav-reviews">Moderar Reseñas</a>
+            <a href="#" id="nav-categories">Categorías</a>
+            <a href="#" onclick="api.auth.logout()">Cerrar Sesión</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="flex space-between mb-1" style="align-items: center;">
+            <h2 id="viewTitle">Gestión de Usuarios</h2>
+            <div id="userInfo" style="color: var(--text-muted);"></div>
+        </header>
+
+        <!-- Vista Usuarios -->
+        <section id="view-users" class="view-section">
+            <div class="flex gap-1 mb-1">
+                <button class="btn btn-outline" onclick="loadUsers('BUYER')">Buyers</button>
+                <button class="btn btn-outline" onclick="loadUsers('SELLER')">Sellers</button>
+                <button class="btn btn-outline" onclick="loadUsers('ADMIN')">Admins</button>
+            </div>
+            <div id="usersTable"></div>
+        </section>
+
+        <!-- Vista Moderación -->
+        <section id="view-moderation" class="view-section" style="display: none;">
+            <div class="flex gap-1 mb-1">
+                <button class="btn btn-outline" onclick="loadBooksByStatus('PENDIENTE')">Pendientes</button>
+                <button class="btn btn-outline" onclick="loadBooksByStatus('APROBADO')">Aprobados</button>
+                <button class="btn btn-outline" onclick="loadBooksByStatus('RECHAZADO')">Rechazados</button>
+            </div>
+            <div id="moderationGrid" class="books-grid"></div>
+        </section>
+
+        <!-- Vista Órdenes -->
+        <section id="view-orders" class="view-section" style="display: none;">
+            <div id="ordersTable"></div>
+        </section>
+
+        <!-- Vista Moderación de Reseñas -->
+        <section id="view-reviews" class="view-section" style="display: none;">
+            <div id="reviewsTable"></div>
+        </section>
+
+        <!-- Vista Categorías -->
+        <section id="view-categories" class="view-section" style="display: none;">
+            <div class="auth-card" style="max-width: 600px; margin-bottom: 2rem;">
+                <h3>Agregar Categoría</h3>
+                <div class="flex gap-1">
+                    <input type="text" id="newCategoryName" placeholder="Nombre de categoría" style="flex:1;">
+                    <button class="btn btn-primary" onclick="addCategory()">Agregar</button>
+                </div>
+            </div>
+            <div id="categoriesList"></div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = api.auth.getCurrentUser();
+            if (!user || user.role !== 'ADMIN') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('userInfo').textContent = `Admin: ${user.fullName}`;
+
+            const views = ['users', 'moderation', 'orders', 'reviews', 'categories'];
+            views.forEach(v => {
+                document.getElementById(`nav-${v}`).addEventListener('click', (e) => {
+                    e.preventDefault();
+                    views.forEach(view => {
+                        document.getElementById(`view-${view}`).style.display = 'none';
+                        document.getElementById(`nav-${view}`).classList.remove('active');
+                    });
+                    document.getElementById(`view-${v}`).style.display = 'block';
+                    document.getElementById(`nav-${v}`).classList.add('active');
+
+                    if (v === 'users') { document.getElementById('viewTitle').textContent = 'Gestión de Usuarios'; loadUsers('BUYER'); }
+                    if (v === 'moderation') { document.getElementById('viewTitle').textContent = 'Moderación de Libros'; loadBooksByStatus('PENDIENTE'); }
+                    if (v === 'orders') { document.getElementById('viewTitle').textContent = 'Todas las Órdenes'; loadAllOrders(); }
+                    if (v === 'reviews') { document.getElementById('viewTitle').textContent = 'Reseñas Reportadas'; loadReportedReviews(); }
+                    if (v === 'categories') { document.getElementById('viewTitle').textContent = 'Gestión de Categorías'; loadAdminCategories(); }
+                });
+            });
+
+            loadUsers('BUYER');
+        });
+
+        async function loadUsers(role) {
+            const container = document.getElementById('usersTable');
+            try {
+                container.innerHTML = '<p>Cargando...</p>';
+                const users = await api.get(`/users/role/${role}`);
+                if (!users || users.length === 0) { container.innerHTML = '<p>No hay usuarios con rol ' + role + '.</p>'; return; }
+
+                let html = `<table style="width:100%; border-collapse:collapse;">
+                    <thead><tr style="border-bottom:2px solid var(--surface-light); text-align:left;">
+                        <th style="padding:0.8rem;">Nombre</th>
+                        <th style="padding:0.8rem;">Email</th>
+                        <th style="padding:0.8rem;">Estado</th>
+                        <th style="padding:0.8rem;">Acciones</th>
+                    </tr></thead><tbody>`;
+
+                users.forEach(u => {
+                    const isActive = u.active !== false;
+                    html += `<tr style="border-bottom:1px solid var(--surface-light);">
+                        <td style="padding:0.8rem;">${u.fullName}</td>
+                        <td style="padding:0.8rem; color:var(--text-muted);">${u.email}</td>
+                        <td style="padding:0.8rem;">
+                            <span style="color:${isActive ? 'var(--primary)' : 'var(--danger)'}; font-weight:bold;">${isActive ? 'Activo' : 'Inactivo'}</span>
+                        </td>
+                        <td style="padding:0.8rem;">
+                            ${isActive
+                                ? `<button class="btn btn-danger" style="font-size:0.8rem;" onclick="toggleUser('${u.id}', false, '${role}')">Desactivar</button>`
+                                : `<button class="btn btn-primary" style="font-size:0.8rem;" onclick="toggleUser('${u.id}', true, '${role}')">Activar</button>`
+                            }
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) { container.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+
+        async function toggleUser(userId, activate, role) {
+            try {
+                const endpoint = activate ? `/users/${userId}/activate` : `/users/${userId}/deactivate`;
+                await api.post(endpoint);
+                loadUsers(role);
+            } catch (e) { alert(e.message); }
+        }
+
+        async function loadBooksByStatus(status) {
+            const grid = document.getElementById('moderationGrid');
+            try {
+                grid.innerHTML = '<p>Cargando...</p>';
+                const books = await api.get(`/books/status/${status}`);
+                if (!books || books.length === 0) { grid.innerHTML = `<p>No hay libros con estado ${status}.</p>`; return; }
+                grid.innerHTML = '';
+                books.forEach(book => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div style="background:var(--surface-light); height:160px; display:flex; align-items:center; justify-content:center;">
+                            ${book.urlPortada ? `<img src="${book.urlPortada}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
+                        </div>
+                        <div class="book-info">
+                            <h3 class="book-title">${book.titulo}</h3>
+                            <p class="book-author">${book.autor} — $${book.precio.toFixed(2)}</p>
+                            <p style="color:var(--text-muted); font-size:0.8rem;">Seller: ${book.sellerEmail || 'N/A'}</p>
+                            ${status === 'PENDIENTE' ? `
+                                <div class="flex gap-1 mt-1">
+                                    <button class="btn btn-primary" style="flex:1; font-size:0.8rem;" onclick="approveBook('${book.id}')">Aprobar</button>
+                                    <button class="btn btn-danger" style="flex:1; font-size:0.8rem;" onclick="rejectBook('${book.id}')">Rechazar</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) { grid.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+
+        async function approveBook(bookId) {
+            try { await api.post(`/books/${bookId}/approve`); loadBooksByStatus('PENDIENTE'); } catch (e) { alert(e.message); }
+        }
+
+        async function rejectBook(bookId) {
+            const reason = prompt('Razón del rechazo:');
+            if (!reason) return;
+            try { await api.post(`/books/${bookId}/reject`, { reason }); loadBooksByStatus('PENDIENTE'); } catch (e) { alert(e.message); }
+        }
+
+        async function loadAllOrders() {
+            const container = document.getElementById('ordersTable');
+            try {
+                container.innerHTML = '<p>Cargando...</p>';
+                const orders = await api.get('/orders');
+                if (!orders || orders.length === 0) { container.innerHTML = '<p>No hay órdenes registradas.</p>'; return; }
+
+                let html = `<table style="width:100%; border-collapse:collapse;">
+                    <thead><tr style="border-bottom:2px solid var(--surface-light); text-align:left;">
+                        <th style="padding:0.8rem;">ID</th>
+                        <th style="padding:0.8rem;">Usuario</th>
+                        <th style="padding:0.8rem;">Monto</th>
+                        <th style="padding:0.8rem;">Estado</th>
+                    </tr></thead><tbody>`;
+
+                orders.forEach(o => {
+                    html += `<tr style="border-bottom:1px solid var(--surface-light);">
+                        <td style="padding:0.8rem; font-family:monospace; font-size:0.85rem;">${o.id.substring(0, 8)}...</td>
+                        <td style="padding:0.8rem;">${o.userId ? o.userId.substring(0, 8) + '...' : 'N/A'}</td>
+                        <td style="padding:0.8rem; color:var(--primary); font-weight:bold;">$${(o.totalAmount || 0).toFixed(2)}</td>
+                        <td style="padding:0.8rem;">${o.status || 'COMPLETADA'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) { container.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+
+        async function loadReportedReviews() {
+            const container = document.getElementById('reviewsTable');
+            try {
+                container.innerHTML = '<p>Cargando...</p>';
+                // Simulamos un endpoint de reportadas, o traemos todas si no existe /reported
+                const reviews = await api.get('/reviews/reported').catch(() => []);
+                if (!reviews || reviews.length === 0) { container.innerHTML = '<p>No hay reseñas reportadas en este momento.</p>'; return; }
+
+                let html = `<div style="display:flex; flex-direction:column; gap:1rem;">`;
+                reviews.forEach(r => {
+                    html += `
+                        <div style="background:var(--surface); padding:1.5rem; border-radius:8px; border:1px solid var(--surface-light);">
+                            <div class="flex space-between" style="margin-bottom: 0.5rem;">
+                                <strong>Comentario: ${r.comment || 'Sin comentario'}</strong>
+                                <span style="color:var(--danger); font-weight:bold;">Estado: ${r.status || 'REPORTADA'}</span>
+                            </div>
+                            <p style="color:var(--text-muted); margin-bottom: 1rem;">ID Libro: ${r.bookId} | Calificación: ${r.rating}★</p>
+                            <div class="flex gap-1">
+                                <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="hideReview('${r.id}')">Ocultar</button>
+                                <button class="btn btn-outline" onclick="reactivateReview('${r.id}')">Reactivar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) { container.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+
+        async function hideReview(id) {
+            try { await api.post(`/reviews/${id}/hide`); loadReportedReviews(); } catch (e) { alert(e.message); }
+        }
+
+        async function reactivateReview(id) {
+            try { await api.post(`/reviews/${id}/reactivate`); loadReportedReviews(); } catch (e) { alert(e.message); }
+        }
+
+        async function loadAdminCategories() {
+            const container = document.getElementById('categoriesList');
+            try {
+                container.innerHTML = '<p>Cargando...</p>';
+                const categories = await api.get('/books/categories');
+                if (!categories || categories.length === 0) { container.innerHTML = '<p>No hay categorías definidas.</p>'; return; }
+
+                let html = '<div style="display:flex; flex-wrap:wrap; gap:1rem;">';
+                categories.forEach(c => {
+                    html += `<span style="padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--surface-light); border-radius: 8px;">${c}</span>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (e) { container.innerHTML = `<p class="error-message">${e.message}</p>`; }
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('newCategoryName').value;
+            if (!name) return;
+            alert('Añadido simulado para: ' + name);
+            document.getElementById('newCategoryName').value = '';
+            // Si existiera un POST /books/categories: await api.post('/books/categories', { name });
+            loadAdminCategories();
+        }
+    </script>
+</body>
+</html>

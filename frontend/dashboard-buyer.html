@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel - OpenLib Market</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo">OpenLib <span>Market</span></div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" id="nav-catalog">Catálogo</a>
+            <a href="#" id="nav-favorites">Mis Favoritos</a>
+            <a href="#" id="nav-cart">Mi Carrito <span id="cartCount" style="color:var(--primary); font-weight:bold;">(0)</span></a>
+            <a href="#" id="nav-orders">Mis Compras</a>
+            <a href="#" id="nav-library">Mi Biblioteca</a>
+            <a href="#" id="nav-profile">Mi Perfil</a>
+            <a href="#" onclick="api.auth.logout()">Cerrar Sesión</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="flex space-between mb-1" style="align-items: center;">
+            <h2 id="viewTitle">Catálogo de Libros</h2>
+            <div id="userInfo" style="color: var(--text-muted);"></div>
+        </header>
+
+        <!-- Vista Catálogo -->
+        <section id="view-catalog" class="view-section">
+            <div class="search-bar" style="margin-left:0; max-width: 100%; display: flex; gap: 0.5rem;">
+                <input type="text" id="searchInput" placeholder="Buscar libros, autores..." style="flex: 2;">
+                <select id="categoryFilter" class="btn btn-outline" style="flex: 1; padding: 0.8rem; border-radius: 8px;">
+                    <option value="">Todas las Categorías</option>
+                </select>
+                <button id="searchBtn" class="btn btn-primary">Buscar</button>
+            </div>
+            <div id="booksGrid" class="books-grid mt-2"></div>
+            
+            <!-- Modal para detalles del libro -->
+            <div id="bookModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding: 2rem;">
+                <div class="modal-content" style="background:var(--surface); padding:2rem; border-radius:12px; width:100%; max-width:800px; max-height:90vh; overflow-y:auto; position:relative;">
+                    <button id="closeModalBtn" class="btn btn-danger" style="position:absolute; top:1rem; right:1rem;">X</button>
+                    <div id="bookModalContent"></div>
+                    
+                    <hr style="border-color: var(--surface-light); margin: 2rem 0;">
+                    
+                    <div id="reviewsSection">
+                        <h3>Reseñas</h3>
+                        <div id="reviewsList" style="margin-bottom: 1rem;"></div>
+                        
+                        <div class="auth-card" style="padding: 1.5rem; background: var(--background);">
+                            <h4>Deja tu reseña</h4>
+                            <div class="form-group">
+                                <label>Calificación (1-5)</label>
+                                <input type="number" id="reviewRating" min="1" max="5" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Comentario</label>
+                                <textarea id="reviewComment" rows="3" style="width:100%; padding: 0.8rem; border-radius:8px; border:1px solid var(--surface-light); background:var(--surface); color:var(--text);"></textarea>
+                            </div>
+                            <button id="submitReviewBtn" class="btn btn-primary">Enviar Reseña</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vista Carrito -->
+        <section id="view-cart" class="view-section" style="display: none;">
+            <div id="cartContent">
+                <!-- Se llena por JS -->
+            </div>
+            <div id="checkoutPanel" style="display:none; margin-top:2rem; padding: 2rem; background: var(--surface); border-radius:12px; border: 1px solid var(--primary);">
+                <h3>Checkout Segura</h3>
+                <div class="flex gap-1 mt-1">
+                    <div class="form-group" style="flex:1;">
+                        <label>País</label><input type="text" id="chkPais" value="Colombia">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Ciudad</label><input type="text" id="chkCiudad" value="Bogota">
+                    </div>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Dirección</label><input type="text" id="chkCalle" value="Calle 123">
+                </div>
+                <button class="btn btn-primary mt-1" onclick="processCheckout()">Confirmar Pago y Comprar</button>
+            </div>
+        </section>
+
+        <!-- Vista Biblioteca -->
+        <section id="view-library" class="view-section" style="display: none;">
+            <div id="libraryGrid" class="books-grid"></div>
+        </section>
+
+        <!-- Vista Favoritos -->
+        <section id="view-favorites" class="view-section" style="display: none;">
+            <div id="favoritesGrid" class="books-grid"></div>
+        </section>
+
+        <!-- Vista Historial de Compras -->
+        <section id="view-orders" class="view-section" style="display: none;">
+            <div id="ordersList"></div>
+        </section>
+
+        <!-- Vista Perfil -->
+        <section id="view-profile" class="view-section" style="display: none;">
+            <div class="auth-card" style="max-width: 600px;">
+                <h3>Actualizar Perfil</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profName">Nombre Completo</label>
+                        <input type="text" id="profName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profPhone">Teléfono</label>
+                        <input type="text" id="profPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="profAddress">Dirección</label>
+                        <input type="text" id="profAddress">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Guardar Cambios</button>
+                    <div id="profileMessage" style="margin-top: 1rem; color: var(--primary);"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/catalog.js"></script>
+    <script src="js/cart.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = api.auth.getCurrentUser();
+            if(!user || user.role !== 'BUYER') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('userInfo').textContent = `Hola, ${user.fullName}`;
+
+            // Navegación simple
+            const views = ['catalog', 'favorites', 'cart', 'orders', 'library', 'profile'];
+            views.forEach(v => {
+                document.getElementById(`nav-${v}`).addEventListener('click', (e) => {
+                    e.preventDefault();
+                    views.forEach(view => {
+                        document.getElementById(`view-${view}`).style.display = 'none';
+                        document.getElementById(`nav-${view}`).classList.remove('active');
+                    });
+                    document.getElementById(`view-${v}`).style.display = 'block';
+                    document.getElementById(`nav-${v}`).classList.add('active');
+                    
+                    if (v === 'catalog') {
+                        document.getElementById('viewTitle').textContent = 'Catálogo de Libros';
+                        if (typeof loadCatalog === 'function') loadCatalog();
+                    }
+                    if (v === 'cart') {
+                        document.getElementById('viewTitle').textContent = 'Mi Carrito de Compras';
+                        if (typeof loadCart === 'function') loadCart(); // En cart.js
+                    }
+                    if (v === 'library') {
+                        document.getElementById('viewTitle').textContent = 'Mi Biblioteca';
+                        if (typeof loadLibrary === 'function') loadLibrary(); // En cart.js
+                    }
+                    if (v === 'favorites') {
+                        document.getElementById('viewTitle').textContent = 'Mis Libros Favoritos';
+                        if (typeof loadFavorites === 'function') loadFavorites(); // En catalog.js / buyer.js
+                    }
+                    if (v === 'orders') {
+                        document.getElementById('viewTitle').textContent = 'Historial de Compras';
+                        if (typeof loadOrders === 'function') loadOrders();
+                    }
+                    if (v === 'profile') {
+                        document.getElementById('viewTitle').textContent = 'Mi Perfil';
+                        if (typeof loadProfile === 'function') loadProfile();
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="js/buyer.js"></script>
+</body>
+</html>

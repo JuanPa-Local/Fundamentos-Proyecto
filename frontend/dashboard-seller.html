@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Vendedor - OpenLib Market</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="logo">OpenLib <span>Market</span></div>
+        <p style="color:var(--primary); font-size:0.8rem; margin-top:0.5rem;">Panel Vendedor</p>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" id="nav-mybooks">Mis Libros</a>
+            <a href="#" id="nav-publish">Publicar Libro</a>
+            <a href="#" id="nav-sales">Mis Ventas</a>
+            <a href="#" id="nav-profile">Mi Perfil</a>
+            <a href="#" onclick="api.auth.logout()">Cerrar Sesión</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="flex space-between mb-1" style="align-items: center;">
+            <h2 id="viewTitle">Mis Libros</h2>
+            <div id="userInfo" style="color: var(--text-muted);"></div>
+        </header>
+
+        <!-- Vista Mis Libros -->
+        <section id="view-mybooks" class="view-section">
+            <div id="myBooksGrid" class="books-grid"></div>
+        </section>
+
+        <!-- Vista Publicar Libro -->
+        <section id="view-publish" class="view-section" style="display: none;">
+            <div class="auth-card" style="max-width:600px;">
+                <h3>Nuevo Libro</h3>
+                <form id="publishForm">
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="autor">Autor</label>
+                        <input type="text" id="autor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <input type="text" id="descripcion">
+                    </div>
+                    <div class="flex gap-1">
+                        <div class="form-group" style="flex:1;">
+                            <label for="precio">Precio (USD)</label>
+                            <input type="number" id="precio" step="0.01" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="categoria">Categoría</label>
+                            <input type="text" id="categoria" placeholder="Ficción, Tecnología...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="urlPortada">URL de Portada (opcional)</label>
+                        <input type="text" id="urlPortada" placeholder="https://...">
+                    </div>
+                    <div id="publishError" class="error-message"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Publicar Libro</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Vista Mis Ventas -->
+        <section id="view-sales" class="view-section" style="display: none;">
+            <div id="salesList"></div>
+        </section>
+
+        <!-- Vista Perfil -->
+        <section id="view-profile" class="view-section" style="display: none;">
+            <div class="auth-card" style="max-width: 600px;">
+                <h3>Actualizar Perfil de Vendedor</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profName">Nombre Comercial / Completo</label>
+                        <input type="text" id="profName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profPhone">Teléfono de Contacto</label>
+                        <input type="text" id="profPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="profAddress">Dirección de Facturación</label>
+                        <input type="text" id="profAddress">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Guardar Cambios</button>
+                    <div id="profileMessage" style="margin-top: 1rem; color: var(--primary);"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = api.auth.getCurrentUser();
+            if (!user || user.role !== 'SELLER') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('userInfo').textContent = `Hola, ${user.fullName}`;
+            document.getElementById('autor').value = user.fullName;
+
+            // Navegación
+            const views = ['mybooks', 'publish', 'sales', 'profile'];
+            views.forEach(v => {
+                document.getElementById(`nav-${v}`).addEventListener('click', (e) => {
+                    e.preventDefault();
+                    views.forEach(view => {
+                        document.getElementById(`view-${view}`).style.display = 'none';
+                        document.getElementById(`nav-${view}`).classList.remove('active');
+                    });
+                    document.getElementById(`view-${v}`).style.display = 'block';
+                    document.getElementById(`nav-${v}`).classList.add('active');
+
+                    if (v === 'mybooks') { document.getElementById('viewTitle').textContent = 'Mis Libros'; loadMyBooks(); }
+                    if (v === 'publish') document.getElementById('viewTitle').textContent = 'Publicar Libro';
+                    if (v === 'sales') { document.getElementById('viewTitle').textContent = 'Mis Ventas'; loadSales(); }
+                    if (v === 'profile') { document.getElementById('viewTitle').textContent = 'Mi Perfil'; loadProfile(); }
+                });
+            });
+
+            loadMyBooks();
+
+            // Actualizar Perfil
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const msgDiv = document.getElementById('profileMessage');
+                    try {
+                        const res = await api.put(`/users/${user.id}/profile`, {
+                            fullName: document.getElementById('profName').value,
+                            phone: document.getElementById('profPhone').value,
+                            address: document.getElementById('profAddress').value
+                        });
+                        msgDiv.textContent = 'Perfil actualizado con éxito.';
+                        msgDiv.style.color = 'var(--primary)';
+                        document.getElementById('userInfo').textContent = `Hola, ${res.fullName}`;
+                    } catch (error) {
+                        msgDiv.textContent = error.message;
+                        msgDiv.style.color = 'var(--danger)';
+                    }
+                });
+            }
+
+            // Publicar libro
+            document.getElementById('publishForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const errDiv = document.getElementById('publishError');
+                try {
+                    errDiv.style.display = 'none';
+                    await api.post('/books', {
+                        titulo: document.getElementById('titulo').value,
+                        autor: document.getElementById('autor').value,
+                        descripcion: document.getElementById('descripcion').value,
+                        precio: parseFloat(document.getElementById('precio').value),
+                        categoria: document.getElementById('categoria').value,
+                        urlPortada: document.getElementById('urlPortada').value,
+                        sellerEmail: user.email,
+                        estado: 'PENDIENTE'
+                    });
+                    alert('¡Libro enviado para revisión!');
+                    document.getElementById('publishForm').reset();
+                    document.getElementById('autor').value = user.fullName;
+                    document.getElementById('nav-mybooks').click();
+                } catch (error) {
+                    errDiv.textContent = error.message;
+                    errDiv.style.display = 'block';
+                }
+            });
+        });
+
+        async function loadMyBooks() {
+            const user = api.auth.getCurrentUser();
+            const grid = document.getElementById('myBooksGrid');
+            try {
+                grid.innerHTML = '<p>Cargando...</p>';
+                const books = await api.get(`/books/seller/${user.email}`);
+                if (!books || books.length === 0) { grid.innerHTML = '<p>No tienes libros publicados aún.</p>'; return; }
+                grid.innerHTML = '';
+                books.forEach(book => {
+                    const statusColor = book.estado === 'APROBADO' ? 'var(--primary)' : book.estado === 'RECHAZADO' ? 'var(--danger)' : '#f0ad4e';
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div style="background:var(--surface-light); height:180px; display:flex; align-items:center; justify-content:center;">
+                            ${book.urlPortada ? `<img src="${book.urlPortada}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
+                        </div>
+                        <div class="book-info">
+                            <h3 class="book-title">${book.titulo}</h3>
+                            <p class="book-author">$${book.precio.toFixed(2)}</p>
+                            <span style="color:${statusColor}; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">● ${book.estado}</span>
+                            <button class="btn btn-danger mt-1" style="font-size:0.8rem;" onclick="deleteBook('${book.id}')">Eliminar</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) { grid.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+
+        async function deleteBook(bookId) {
+            if (!confirm('¿Estás seguro de eliminar este libro?')) return;
+            try { await api.delete(`/books/${bookId}`); loadMyBooks(); } catch (e) { alert(e.message); }
+        }
+
+        async function loadProfile() {
+            const user = api.auth.getCurrentUser();
+            if (!user) return;
+            try {
+                const profile = await api.get(`/users/${user.id}/profile`);
+                document.getElementById('profName').value = profile.fullName || '';
+                document.getElementById('profPhone').value = profile.phone || '';
+                document.getElementById('profAddress').value = profile.address || '';
+            } catch (error) {
+                console.error('Error cargando perfil:', error);
+            }
+        }
+
+        async function loadSales() {
+            const user = api.auth.getCurrentUser();
+            const container = document.getElementById('salesList');
+            try {
+                container.innerHTML = '<p>Cargando ventas...</p>';
+                const orders = await api.get(`/orders/seller/${user.email}`);
+                if (!orders || orders.length === 0) { container.innerHTML = '<p>Aún no tienes ventas registradas.</p>'; return; }
+                let total = 0;
+                let html = '<div style="display:flex; flex-direction:column; gap:1rem;">';
+                orders.forEach(order => {
+                    total += order.totalAmount || 0;
+                    html += `
+                        <div style="background:var(--surface); padding:1rem; border-radius:8px; border:1px solid var(--surface-light);">
+                            <div class="flex space-between" style="align-items:center;">
+                                <div>
+                                    <strong>${order.id.substring(0, 8)}...</strong>
+                                    <span style="color:var(--text-muted); margin-left:1rem;">${order.fecha || ''}</span>
+                                </div>
+                                <span style="color:var(--primary); font-weight:bold;">$${(order.totalAmount || 0).toFixed(2)}</span>
+                            </div>
+                        </div>`;
+                });
+                html += `</div>
+                    <div style="text-align:right; margin-top:2rem; font-size:1.3rem;">
+                        Total Ventas: <span style="color:var(--primary); font-weight:bold;">$${total.toFixed(2)}</span>
+                    </div>`;
+                container.innerHTML = html;
+            } catch (error) { container.innerHTML = `<p class="error-message" style="display:block">${error.message}</p>`; }
+        }
+    </script>
+</body>
+</html>

@@ -1,77 +1,569 @@
 =========================================================
-      RESUMEN Y ESTRUCTURA DEL PROYECTO OPENLIB MARKET
+    OPENLIB MARKET — RESUMEN COMPLETO DEL PROYECTO
 =========================================================
 
-1. ¿QUÉ SE HA HECHO RECIENTEMENTE?
+1. RESUMEN GENERAL
 ---------------------------------------------------------
-El proyecto ha pasado por una refactorización masiva para migrar de una arquitectura local (JavaFX) a una arquitectura Web moderna (Cliente-Servidor).
+OpenLib Market es una plataforma de compra y descarga de
+libros digitales (e-books). Funciona como un marketplace
+donde VENDEDORES publican libros, COMPRADORES los buscan,
+los agregan al carrito, pagan y los descargan, y un
+ADMINISTRADOR modera todo el contenido.
 
-* Eliminación de JavaFX: Se erradicó por completo el uso de JavaFX debido a los persistentes problemas de entorno.
-* API RESTful (Backend): Se adaptaron todos los casos de uso y repositorios para que expongan sus funciones a través de controladores REST (JSON).
-* Nuevo Frontend (Web): Se creó desde cero una interfaz web en HTML, CSS y JS sin frameworks complejos. Cuenta con un diseño "Dark Premium" atractivo.
-* Finalización de los 30 Planes de Diseño: Se cumplió con el 100% de la lógica descrita en la carpeta `desing/`, implementando en el backend y frontend funciones como:
-  - Catálogo, búsquedas y filtros por categoría.
-  - Carrito de compras y Checkout simulado.
-  - Gestión de perfiles y autenticación basada en Roles (Admin, Buyer, Seller).
-  - Publicación y moderación de libros.
-  - Sistema de reseñas y favoritos.
-  - Historial de órdenes y Biblioteca personal para descarga.
+El proyecto se divide en dos partes independientes:
 
-2. ESTRUCTURA DEL PROYECTO
+  • BACKEND (Java 21 + Spring Boot 4):
+    API REST que maneja toda la lógica de negocio,
+    persistencia en PostgreSQL y sesiones en Redis.
+
+  • FRONTEND (HTML + CSS + JavaScript puro):
+    Interfaz web estática que consume la API REST.
+    No usa frameworks (sin React, Angular, etc.).
+
+Arquitectura: Hexagonal (Puertos y Adaptadores)
+  - domain/    → Entidades y reglas de negocio
+  - application/ → Casos de uso y fachadas
+  - infrastructure/ → Implementaciones técnicas (Redis, JPA)
+  - config/    → Configuración de Spring
+
+
+=========================================================
+2. ESTRUCTURA DEL PROYECTO — ARCHIVOS DE CÓDIGO (src/)
+=========================================================
+
 ---------------------------------------------------------
-El proyecto está dividido en dos grandes bloques completamente independientes que se comunican por red (HTTP/REST).
-
-📁 Raíz: c:\Users\jupas\Downloads\Openlib Market\
-
-├── 📁 backend/ (El Servidor - Spring Boot / Java)
-│   ├── docker-compose.yml     -> Contiene la infraestructura de Base de Datos (PostgreSQL y Redis).
-│   ├── pom.xml                -> Archivo de dependencias de Maven.
-│   ├── 📁 desing/             -> Contiene los 30 archivos Markdown con la planificación original del sistema.
-│   └── 📁 src/main/
-│       ├── 📁 resources/      -> Configuraciones (application.yml).
-│       └── 📁 java/com/openlib/backend/
-│           ├── BackendApplication.java -> Archivo ejecutable principal.
-│           └── 📁 domain/     -> Lógica de negocio orientada a dominios (DDD).
-│               ├── book/      -> Libros, Categorías, Reseñas (Reviews).
-│               ├── order/     -> Órdenes, Carrito, Favoritos, Descargas.
-│               ├── user/      -> Autenticación, Roles, Perfiles.
-│               └── common/    -> Excepciones globales y utilidades.
-│
-└── 📁 frontend/ (El Cliente - HTML / CSS / JS)
-    ├── index.html             -> Página principal de aterrizaje (Landing Page).
-    ├── login.html / register.html -> Vistas de autenticación.
-    ├── dashboard-buyer.html   -> Panel del comprador (Catálogo, Carrito, Favoritos, Compras).
-    ├── dashboard-seller.html  -> Panel del vendedor (Publicar libros, Mis Ventas).
-    ├── dashboard-admin.html   -> Panel del administrador (Moderar usuarios, reseñas y libros).
-    ├── 📁 css/
-    │   └── main.css           -> Estilos de diseño Dark Premium.
-    └── 📁 js/                 -> Lógica del navegador.
-        ├── api.js             -> Utilidad para hacer peticiones fetch al backend en http://localhost:8080/api
-        ├── auth.js            -> Manejo de sesión (simulada en localStorage).
-        ├── buyer.js           -> Lógica exclusiva de la vista del comprador (Modal, Reseñas, Historial).
-        ├── cart.js            -> Manejo del carrito de compras.
-        └── catalog.js         -> Lógica de renderizado del catálogo.
-
-3. TECNOLOGÍAS UTILIZADAS
+2.1 RAÍZ Y CONFIGURACIÓN
 ---------------------------------------------------------
-* Backend: Java 24, Spring Boot 3, Spring Data JPA.
-* Base de Datos Relacional: PostgreSQL (Core del negocio).
-* Base de Datos En Memoria: Redis (Para persistir sesiones y el Carrito de compras rápido).
-* Frontend: Vanilla HTML5, CSS3 y JavaScript ES6 (Comunicación vía Fetch API).
 
-4. PASOS PARA EJECUTAR EN EL DÍA A DÍA
+BackendApplication.java
+  → Punto de entrada principal. Contiene el main() que
+    arranca Spring Boot y todo el servidor.
+
+application.yml
+  → Configuración central: URL de PostgreSQL, credenciales,
+    puerto del servidor (8080), Redis, Hibernate.
+
+docker-compose.yml
+  → Define los contenedores Docker necesarios:
+    PostgreSQL (puerto 5432) y Redis (puerto 6379).
+
+pom.xml
+  → Archivo Maven con todas las dependencias del proyecto:
+    Spring Boot, PostgreSQL Driver, Redis, Lombok, etc.
+
 ---------------------------------------------------------
-1. Levantar bases de datos: Abrir terminal en `backend/` y correr `docker-compose up -d`.
-2. Levantar el Backend: Ejecutar `BackendApplication.java` desde tu IDE (IntelliJ).
-3. Abrir el Frontend: Abrir el archivo `frontend/index.html` en el navegador.
-
-5. USUARIOS DE PRUEBA
+2.2 CONFIGURACIÓN (config/)
 ---------------------------------------------------------
-Al arrancar la aplicación por primera vez, se crea automáticamente un usuario administrador:
-* Email: admin@openlib.com
-* Password: admin123
 
-Puedes registrar tus propios usuarios (Comprador o Vendedor) desde la página de registro del Frontend.
+SecurityConfig.java
+  → Configura Spring Security. Desactiva CSRF, habilita
+    CORS para que el frontend pueda llamar a la API, y
+    permite acceso público a todos los endpoints /api/**.
+
+RedisConfig.java
+  → Configura la conexión a Redis y el serializador JSON
+    para guardar objetos como el carrito de compras.
+
+DataInitializer.java
+  → Se ejecuta al arrancar la app. Crea automáticamente
+    un usuario administrador por defecto si no existe.
+
+GlobalExceptionHandler.java
+  → Captura TODAS las excepciones del backend y las
+    convierte en respuestas HTTP con mensajes claros
+    (400, 404, 409, 500) en vez de errores genéricos.
+
+---------------------------------------------------------
+2.3 DOMINIO DE USUARIOS (domain/user/)
+---------------------------------------------------------
+
+User.java
+  → Entidad JPA. Representa un usuario en la base de datos.
+    Campos: id, email, passwordHash, fullName, role
+    (ADMIN/BUYER/SELLER), active, phone, address, avatarUrl.
+
+UserController.java
+  → Endpoints REST para usuarios:
+    POST /api/users/register → Registro
+    POST /api/users/login    → Inicio de sesión
+    GET  /api/users/role/{role} → Listar por rol
+    PUT  /api/users/{id}/profile → Editar perfil
+    POST /api/users/{id}/activate → Activar cuenta
+    POST /api/users/{id}/deactivate → Desactivar cuenta
+
+UserService.java
+  → Lógica de negocio de usuarios: valida email único,
+    encripta contraseñas con BCrypt, verifica credenciales.
+
+UserRepository.java
+  → Interfaz Spring Data JPA. Consultas a la tabla "users":
+    buscar por email, listar por rol, verificar existencia.
+
+EXCEPCIONES de usuario:
+  CredencialesInvalidasException.java → Login con datos incorrectos
+  CuentaInactivaException.java       → Cuenta desactivada por admin
+  EmailDuplicadoException.java       → Registro con email repetido
+  UsuarioNoEncontradoException.java  → ID de usuario inexistente
+
+---------------------------------------------------------
+2.4 DOMINIO DE LIBROS (domain/book/)
+---------------------------------------------------------
+
+Book.java
+  → Entidad JPA. Representa un libro en la base de datos.
+    Campos: id, title, author, description, isbn, price,
+    category, status (PENDIENTE/APROBADO/RECHAZADO),
+    coverUrl (imagen), filePath (URL del PDF para descarga),
+    sellerEmail, downloadCount, averageRating, reviewCount.
+
+BookController.java
+  → Endpoints REST para libros:
+    GET  /api/books              → Todos los libros
+    GET  /api/books/{id}         → Detalle de un libro
+    POST /api/books              → Publicar libro (seller)
+    GET  /api/books/catalog      → Buscar en catálogo
+    GET  /api/books/catalog/filter → Buscar con filtros
+    GET  /api/books/categories   → Listar categorías
+    GET  /api/books/status/{s}   → Libros por estado
+    GET  /api/books/seller/{email} → Libros de un vendedor
+    POST /api/books/{id}/approve → Aprobar libro (admin)
+    POST /api/books/{id}/reject  → Rechazar libro (admin)
+    GET  /api/books/popular      → Libros más populares
+
+BookService.java
+  → Lógica de negocio de libros: búsqueda, filtros,
+    aprobación/rechazo, validación de ISBN duplicado.
+
+BookRepository.java
+  → Interfaz JPA. Consultas avanzadas: búsqueda por
+    título/autor, filtrar por categoría+estado, listar
+    categorías distintas, ordenar por descargas.
+
+BookObserver.java
+  → Patrón Observer. Escucha el evento "OrderCompleted"
+    y actualiza automáticamente el contador de descargas
+    del libro cuando alguien completa una compra.
+
+Review.java
+  → Entidad JPA. Reseña de un libro hecha por un comprador.
+    Campos: id, user, book, rating (1-5), comment, status
+    (ACTIVA/REPORTADA/OCULTA), createdAt.
+
+ReviewController.java
+  → Endpoints REST para reseñas:
+    POST /api/reviews            → Crear reseña
+    GET  /api/reviews/book/{id}  → Reseñas de un libro
+    GET  /api/reviews/reported   → Reseñas reportadas
+    POST /api/reviews/{id}/hide  → Ocultar reseña (admin)
+    POST /api/reviews/{id}/reactivate → Reactivar reseña
+
+ReviewService.java
+  → Lógica: valida que no haya reseña duplicada, actualiza
+    el promedio de calificación del libro automáticamente.
+
+ReviewRepository.java
+  → Interfaz JPA. Consultas por libro y por estado.
+
+EXCEPCIONES de libros:
+  IsbnDuplicadoException.java         → ISBN ya registrado
+  LibroNoEncontradoException.java     → Libro inexistente
+  LibroNoEnEstadoPendienteException.java → Intentar aprobar uno ya aprobado
+  MotivoRechazoObligatorioException.java → Rechazar sin dar razón
+  ResenaNoEncontradaException.java     → Reseña inexistente
+  ResenaYaExisteException.java         → Usuario ya reseñó ese libro
+
+---------------------------------------------------------
+2.5 DOMINIO DE ÓRDENES Y COMPRAS (domain/order/)
+---------------------------------------------------------
+
+Order.java
+  → Entidad JPA. Representa una compra realizada.
+    Campos: id, user, book, status, totalPrice, orderedAt.
+
+OrderController.java
+  → Endpoints REST para órdenes:
+    POST /api/orders              → Crear orden
+    GET  /api/orders              → Todas (admin)
+    GET  /api/orders/{id}         → Detalle de orden
+    GET  /api/orders/history/{userId} → Historial paginado
+    GET  /api/orders/library/{userId} → Biblioteca personal
+    GET  /api/orders/library/check → ¿Tiene este libro?
+    GET  /api/orders/user/{userId} → Órdenes de un usuario
+    GET  /api/orders/seller/{email} → Ventas de un seller
+
+OrderService.java
+  → Lógica: crea órdenes, verifica disponibilidad, publica
+    el evento OrderCompletedEvent para que BookObserver
+    actualice las descargas.
+
+OrderRepository.java
+  → Interfaz JPA. Consultas por usuario, seller y paginación.
+
+OrderCompletedEvent.java
+  → Evento de Spring. Se dispara cuando se completa una
+    compra para notificar a los observadores (BookObserver).
+
+Carrito.java
+  → Modelo de carrito de compras (NO es tabla en BD,
+    se guarda en Redis). Contiene lista de ItemCarrito.
+
+ItemCarrito.java
+  → Un ítem dentro del carrito: libroId, title, price.
+
+CarritoRepository.java
+  → Interfaz (puerto). Define cómo guardar/buscar carritos.
+
+CarritoRestController.java
+  → Endpoints REST del carrito:
+    GET    /api/cart/{buyerId}              → Ver carrito
+    POST   /api/cart/{buyerId}/items/{id}   → Agregar libro
+    DELETE /api/cart/{buyerId}/items/{id}   → Quitar libro
+
+SesionCheckout.java
+  → Modelo de sesión de pago. Guarda dirección + método
+    de pago temporalmente en Redis durante el checkout.
+
+DireccionFacturacion.java
+  → Modelo: calle, ciudad, departamento, país.
+
+MetodoPago.java
+  → Enum: TARJETA_CREDITO, PAYPAL, TRANSFERENCIA.
+
+CheckoutSessionGateway.java
+  → Interfaz (puerto). Define cómo guardar sesiones de checkout.
+
+CheckoutRestController.java
+  → Endpoints REST del checkout:
+    POST /api/checkout/{id}/address  → Guardar dirección
+    POST /api/checkout/{id}/payment  → Guardar método pago
+    POST /api/checkout/{id}/confirm  → Confirmar compra
+
+Favorite.java
+  → Entidad JPA. Un libro marcado como favorito por un usuario.
+    Campos: id, user, book, createdAt.
+
+FavoriteController.java
+  → Endpoints REST de favoritos:
+    POST   /api/favorites         → Agregar favorito
+    GET    /api/favorites/{userId} → Listar favoritos
+    DELETE /api/favorites         → Quitar favorito
+    GET    /api/favorites/check   → ¿Es favorito?
+
+FavoriteService.java
+  → Lógica: agrega, elimina, verifica duplicados.
+
+FavoriteRepository.java
+  → Interfaz JPA para la tabla "favorites".
+
+Biblioteca.java
+  → Modelo de biblioteca personal del comprador.
+
+BibliotecaRepository.java
+  → Interfaz (puerto) para verificar si un libro ya fue
+    comprado y está en la biblioteca del usuario.
+
+BibliotecaRestController.java
+  → Endpoint REST para consultar la biblioteca.
+
+LibroBiblioteca.java
+  → Modelo: un libro dentro de la biblioteca personal.
+
+EnlaceDescarga.java
+  → Modelo de dominio: enlace temporal y seguro para
+    descargar un libro (con token, expiración, usos).
+
+EnlaceDescargaRepository.java
+  → Interfaz (puerto) para guardar/buscar enlaces.
+
+RegistroDescarga.java
+  → Modelo: registro de cada descarga realizada (auditoría).
+
+TokenGateway.java
+  → Interfaz (puerto) para generar tokens seguros.
+
+DescargaRestController.java
+  → Endpoints REST de descargas:
+    POST /api/downloads/generate → Generar enlace temporal
+    GET  /api/downloads/{token}  → Ejecutar descarga
+
+EXCEPCIONES de órdenes/compras:
+  CampoDireccionObligatorioException.java  → Falta dirección
+  CarritoVacioException.java               → Carrito sin ítems
+  EnlaceExpiradoException.java             → Token vencido
+  EnlaceYaUsadoException.java              → Token ya usado
+  ItemNoEncontradoException.java           → Ítem no está en carrito
+  LibroNoDisponibleException.java          → Libro no aprobado
+  LibroNoEnBibliotecaException.java        → No tiene el libro
+  LibroNoEnFavoritosException.java         → No está en favoritos
+  LibroYaAdquiridoException.java           → Ya lo compró
+  LibroYaEnBibliotecaException.java        → Ya está en biblioteca
+  LibroYaEnCarritoException.java           → Ya está en el carrito
+  LibroYaEnFavoritosException.java         → Ya es favorito
+  MetodoPagoInvalidoException.java         → Método no soportado
+  OrdenNoEncontradaException.java          → Orden inexistente
+  SesionCheckoutExpiradaException.java     → Sesión venció
+  SesionCheckoutIncompletaException.java   → Falta dirección o pago
+
+ESTRATEGIAS DE DESCUENTO (strategy/):
+  DiscountStrategy.java  → Interfaz del patrón Strategy
+  NoDiscount.java        → Sin descuento (por defecto)
+  SeasonalDiscount.java  → Descuento por temporada
+  VipDiscount.java       → Descuento para clientes VIP
+
+---------------------------------------------------------
+2.6 EXCEPCIONES COMUNES (domain/common/exception/)
+---------------------------------------------------------
+
+BusinessRuleException.java    → Base para errores de negocio (HTTP 400)
+ResourceConflictException.java → Conflicto de datos (HTTP 409)
+ResourceNotFoundException.java → Recurso no encontrado (HTTP 404)
+
+---------------------------------------------------------
+2.7 CAPA DE APLICACIÓN (application/)
+---------------------------------------------------------
+
+CarritoFacade.java
+  → Fachada (Patrón Facade). Orquesta las operaciones del
+    carrito: valida que el libro exista y esté aprobado,
+    que no se haya comprado antes, y lo agrega al carrito.
+
+CheckoutFacade.java
+  → Fachada del proceso de pago. Coordina: guardar dirección,
+    método de pago y confirmar la orden (crea la Order).
+
+DescargaFacade.java
+  → Fachada de descargas. Genera enlaces temporales seguros
+    y valida que el usuario haya comprado el libro.
+
+VerBibliotecaUseCase.java
+  → Caso de uso: obtiene la lista de libros comprados
+    por un usuario (su biblioteca personal).
+
+---------------------------------------------------------
+2.8 CAPA DE INFRAESTRUCTURA (infrastructure/)
+---------------------------------------------------------
+
+RedisCarritoRepository.java
+  → Implementa CarritoRepository usando Redis.
+    Guarda el carrito serializado en JSON con TTL de 7 días.
+
+RedisCheckoutSessionGateway.java
+  → Implementa CheckoutSessionGateway usando Redis.
+    Guarda la sesión de checkout con TTL de 30 minutos.
+
+BibliotecaRepositoryAdapter.java
+  → Implementa BibliotecaRepository usando JPA.
+    Consulta las órdenes completadas del usuario.
+
+EnlaceDescargaJpaEntity.java
+  → Entidad JPA para la tabla "enlace_descarga".
+
+EnlaceDescargaRepositoryAdapter.java
+  → Implementa EnlaceDescargaRepository usando JPA.
+
+RegistroDescargaJpaEntity.java
+  → Entidad JPA para la tabla "registro_descarga".
+
+SpringEnlaceDescargaRepository.java
+  → Interfaz Spring Data para enlaces de descarga.
+
+SpringRegistroDescargaRepository.java
+  → Interfaz Spring Data para registros de descarga.
+
+UuidTokenGateway.java
+  → Implementa TokenGateway. Genera tokens UUID aleatorios
+    para los enlaces de descarga seguros.
+
+---------------------------------------------------------
+2.9 RECURSOS (resources/)
+---------------------------------------------------------
+
+V11__crear_tabla_enlace_descarga.sql
+  → Script de migración Flyway para crear las tablas
+    de enlaces y registros de descarga.
+
+global.css
+  → Estilos CSS del backend (no se usa, el frontend
+    tiene su propio main.css).
+
+
+=========================================================
+3. ESTRUCTURA DEL FRONTEND
+=========================================================
+
+---------------------------------------------------------
+3.1 PÁGINAS HTML
+---------------------------------------------------------
+
+index.html
+  → Página de inicio/landing. Muestra el catálogo público
+    de libros con barra de búsqueda y filtros.
+
+login.html
+  → Formulario de inicio de sesión. Valida email/contraseña
+    contra la API y redirige al dashboard correspondiente.
+
+register.html
+  → Formulario de registro. Permite crear cuenta como
+    Comprador (BUYER) o Vendedor (SELLER).
+
+dashboard-buyer.html
+  → Panel del Comprador. Secciones: Catálogo, Carrito,
+    Biblioteca, Historial, Favoritos, Perfil.
+
+dashboard-seller.html
+  → Panel del Vendedor. Secciones: Mis Libros, Publicar
+    Libro (con URL de imagen y PDF), Mis Ventas, Perfil.
+
+dashboard-admin.html
+  → Panel del Administrador. Secciones: Usuarios (activar/
+    desactivar), Moderación de Libros (aprobar/rechazar),
+    Todas las Órdenes, Moderar Reseñas, Categorías.
+
+---------------------------------------------------------
+3.2 JAVASCRIPT (js/)
+---------------------------------------------------------
+
+api.js
+  → Cliente HTTP centralizado. Todas las llamadas a la API
+    pasan por aquí (api.get, api.post, api.put, api.delete).
+    También maneja autenticación con localStorage.
+
+auth.js
+  → Lógica de login y registro. Envía credenciales a la API
+    y guarda el usuario en localStorage.
+
+buyer.js
+  → Lógica del dashboard del comprador: cargar perfil,
+    historial de compras, favoritos, modal de detalles
+    del libro con reseñas y botón de favorito.
+
+cart.js
+  → Lógica del carrito de compras: mostrar ítems, eliminar,
+    checkout (dirección + pago), biblioteca personal y
+    descarga de libros (abre el PDF en nueva pestaña).
+
+catalog.js
+  → Lógica del catálogo público: carga libros desde la API,
+    aplica filtros de búsqueda y categoría, renderiza
+    las tarjetas de libros con portada, precio y botón.
+
+---------------------------------------------------------
+3.3 CSS (css/)
+---------------------------------------------------------
+
+main.css
+  → Estilos globales de toda la aplicación web. Tema oscuro
+    premium con variables CSS, diseño responsive, estilos
+    de tarjetas, botones, formularios, sidebar y modales.
+
+
+=========================================================
+4. CARPETAS DE DOCUMENTACIÓN
+=========================================================
+
+hus/   (30 archivos .md)
+  → Historias de Usuario. Cada archivo describe un
+    requerimiento funcional del sistema (quién, qué, para
+    qué). Van del 1 al 30, cubriendo desde configuración
+    inicial hasta almacenamiento de sesiones.
+
+desing/  (30 archivos .md)
+  → Planes de Implementación. Para cada historia de usuario,
+    hay un plan técnico detallado que describe qué archivos
+    crear/modificar, qué patrones usar y cómo testearlo.
+
+extras/
+  → contexto_proyecto.md   — Contexto original del proyecto
+  → migracion_web_plan.md  — Plan de migración JavaFX → Web
+  → patrones_gof.md        — Patrones de diseño GoF usados
+  → reporte.md             — Reporte técnico del proyecto
+  → RESUMEN_PROYECTO.txt   — Este archivo
+  → scripts_base_datos.txt — Scripts SQL para poblar la BD
+
+
+=========================================================
+5. CONFIRMACIÓN: ¿TODOS LOS ARCHIVOS SON NECESARIOS?
+=========================================================
+
+SÍ. Cada archivo Java cumple un rol específico:
+
+  • Entidades (Book, User, Order, Review, Favorite):
+    Representan las tablas de la base de datos.
+
+  • Controladores (*Controller.java):
+    Exponen los endpoints REST que el frontend consume.
+
+  • Servicios (*Service.java):
+    Contienen la lógica de negocio (validaciones, reglas).
+
+  • Repositorios (*Repository.java):
+    Interfaz para consultar la base de datos (JPA).
+
+  • Fachadas (*Facade.java):
+    Coordinan operaciones complejas que involucran
+    múltiples servicios (ej: checkout = carrito + orden).
+
+  • Excepciones (exception/*.java):
+    Cada una representa un error de negocio específico,
+    permitiendo dar mensajes claros al usuario en vez
+    de errores genéricos "500 Internal Server Error".
+
+  • Estrategias (strategy/*.java):
+    Patrón Strategy para descuentos. Permiten agregar
+    nuevos tipos de descuento sin modificar código existente.
+
+  • Infraestructura (infrastructure/*.java):
+    Implementaciones técnicas de las interfaces de dominio
+    (Redis para carrito, JPA para persistencia, UUID para tokens).
+
+La carpeta "out/" es generada automáticamente por IntelliJ
+y NO es parte del código fuente. Puede ignorarse o eliminarse.
+
+
+=========================================================
+6. CÓMO EJECUTAR EL PROYECTO
+=========================================================
+
+REQUISITOS:
+  • Java 21 o superior
+  • Docker Desktop (para PostgreSQL y Redis)
+  • IntelliJ IDEA (o cualquier IDE con soporte Maven)
+  • Un navegador web moderno (Chrome, Edge, Firefox)
+
+PASOS:
+  1. Abrir terminal en backend/ y ejecutar:
+     docker-compose up -d
+
+  2. Abrir el proyecto en IntelliJ y ejecutar
+     BackendApplication.java (botón Play verde).
+
+  3. Abrir frontend/index.html en el navegador.
+
+USUARIOS DE PRUEBA:
+  (Después de ejecutar los scripts de scripts_base_datos.txt)
+  • admin@openlib.com   / admin123  → Administrador
+  • seller@openlib.com  / admin123  → Vendedor
+  • buyer@openlib.com   / admin123  → Comprador
+
+URLS PRINCIPALES DE LA API:
+  • http://localhost:8080/api/books         → Todos los libros
+  • http://localhost:8080/api/books/catalog → Catálogo público
+  • http://localhost:8080/api/users         → Usuarios
+  • http://localhost:8080/api/orders        → Órdenes
+
+
+=========================================================
+7. PATRONES DE DISEÑO UTILIZADOS
+=========================================================
+
+  1. MVC          → Controlador-Servicio-Repositorio
+  2. Repository   → Abstracción de acceso a datos
+  3. Facade       → Coordinación de operaciones complejas
+  4. Strategy     → Algoritmos intercambiables (descuentos)
+  5. Observer     → Reacción a eventos (compra → +descargas)
+  6. Builder      → Construcción de objetos complejos (Lombok)
+  7. Hexagonal    → Puertos (interfaces) + Adaptadores (impls)
 
 =========================================================
       ¡El proyecto está listo para ser probado!

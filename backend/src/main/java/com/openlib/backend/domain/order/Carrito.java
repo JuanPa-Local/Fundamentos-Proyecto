@@ -25,11 +25,11 @@ public class Carrito {
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaUltimaModificacion;
 
-    public void agregarItem(UUID libroId, String titulo) {
+    public void agregarItem(UUID libroId, String title, Double price) {
         if (contieneLibro(libroId)) {
             throw new LibroYaEnCarritoException("El libro ya se encuentra en el carrito.");
         }
-        items.add(new ItemCarrito(libroId, titulo));
+        items.add(new ItemCarrito(libroId, title, price));
         actualizarFechaModificacion();
     }
 

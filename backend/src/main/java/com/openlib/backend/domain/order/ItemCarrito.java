@@ -13,5 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ItemCarrito {
     private UUID libroId;
-    private String titulo;
+    private String title;
+    private Double price;
 }

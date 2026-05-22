@@ -77,20 +77,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         books.forEach(book => {
             // Solo mostrar libros aprobados (o todos si no hay restricción fuerte)
-            if (book.estado && book.estado !== 'APROBADO') return;
+            if (book.status && book.status !== 'APROBADO') return;
 
             const card = document.createElement('div');
             card.className = 'book-card';
             
-            const coverUrl = book.urlPortada || 'https://via.placeholder.com/220x300?text=Sin+Portada';
+            const coverUrl = book.coverUrl || 'https://via.placeholder.com/220x300?text=Sin+Portada';
             
             card.innerHTML = `
                 <div onclick="if(typeof openBookDetails === 'function') openBookDetails('${book.id}')" style="cursor:pointer;">
-                    <img src="${coverUrl}" alt="Portada de ${book.titulo}" class="book-cover" onerror="this.src='https://via.placeholder.com/220x300?text=Sin+Portada'">
+                    <img src="${coverUrl}" alt="Portada de ${book.title}" class="book-cover" onerror="this.src='https://via.placeholder.com/220x300?text=Sin+Portada'">
                     <div class="book-info">
-                        <h3 class="book-title">${book.titulo}</h3>
-                        <p class="book-author">${book.autor}</p>
-                        <p class="book-price">$${book.precio.toFixed(2)}</p>
+                        <h3 class="book-title">${book.title}</h3>
+                        <p class="book-author">${book.author}</p>
+                        <p class="book-price">$${book.price.toFixed(2)}</p>
                     </div>
                 </div>
                 <div style="padding: 0 1.5rem 1.5rem;">

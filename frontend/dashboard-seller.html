@@ -59,8 +59,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="urlPortada">URL de Portada (opcional)</label>
+                        <label for="urlPortada">URL de Portada (Imagen)</label>
                         <input type="text" id="urlPortada" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="filePath">URL del PDF (Para descargas)</label>
+                        <input type="text" id="filePath" placeholder="https://..." required>
                     </div>
                     <div id="publishError" class="error-message"></div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Publicar Libro</button>
@@ -158,14 +162,15 @@
                 try {
                     errDiv.style.display = 'none';
                     await api.post('/books', {
-                        titulo: document.getElementById('titulo').value,
-                        autor: document.getElementById('autor').value,
-                        descripcion: document.getElementById('descripcion').value,
-                        precio: parseFloat(document.getElementById('precio').value),
-                        categoria: document.getElementById('categoria').value,
-                        urlPortada: document.getElementById('urlPortada').value,
+                        title: document.getElementById('titulo').value,
+                        author: document.getElementById('autor').value,
+                        description: document.getElementById('descripcion').value,
+                        price: parseFloat(document.getElementById('precio').value),
+                        category: document.getElementById('categoria').value,
+                        coverUrl: document.getElementById('urlPortada').value,
+                        filePath: document.getElementById('filePath').value,
                         sellerEmail: user.email,
-                        estado: 'PENDIENTE'
+                        status: 'PENDIENTE'
                     });
                     alert('¡Libro enviado para revisión!');
                     document.getElementById('publishForm').reset();
@@ -187,17 +192,17 @@
                 if (!books || books.length === 0) { grid.innerHTML = '<p>No tienes libros publicados aún.</p>'; return; }
                 grid.innerHTML = '';
                 books.forEach(book => {
-                    const statusColor = book.estado === 'APROBADO' ? 'var(--primary)' : book.estado === 'RECHAZADO' ? 'var(--danger)' : '#f0ad4e';
+                    const statusColor = book.status === 'APROBADO' ? 'var(--primary)' : book.status === 'RECHAZADO' ? 'var(--danger)' : '#f0ad4e';
                     const card = document.createElement('div');
                     card.className = 'book-card';
                     card.innerHTML = `
                         <div style="background:var(--surface-light); height:180px; display:flex; align-items:center; justify-content:center;">
-                            ${book.urlPortada ? `<img src="${book.urlPortada}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
+                            ${book.coverUrl ? `<img src="${book.coverUrl}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
                         </div>
                         <div class="book-info">
-                            <h3 class="book-title">${book.titulo}</h3>
-                            <p class="book-author">$${book.precio.toFixed(2)}</p>
-                            <span style="color:${statusColor}; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">● ${book.estado}</span>
+                            <h3 class="book-title">${book.title}</h3>
+                            <p class="book-author">$${book.price.toFixed(2)}</p>
+                            <span style="color:${statusColor}; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">● ${book.status}</span>
                             <button class="btn btn-danger mt-1" style="font-size:0.8rem;" onclick="deleteBook('${book.id}')">Eliminar</button>
                         </div>
                     `;

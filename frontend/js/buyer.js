@@ -99,7 +99,7 @@ async function loadOrders() {
                             <strong>Orden #${order.id.substring(0, 8)}</strong>
                             <span style="color:var(--text-muted); margin-left:1rem;">${order.fecha || 'Reciente'}</span>
                         </div>
-                        <span style="color:var(--primary); font-weight:bold; font-size: 1.2rem;">$${(order.totalAmount || 0).toFixed(2)}</span>
+                        <span style="color:var(--primary); font-weight:bold; font-size: 1.2rem;">$${(order.totalPrice || 0).toFixed(2)}</span>
                     </div>
                     <p style="font-size:0.9rem; color:var(--text-muted);">Estado: ${order.status || 'COMPLETADA'}</p>
                 </div>`;
@@ -195,13 +195,13 @@ async function openBookDetails(bookId) {
         content.innerHTML = `
             <div class="flex gap-2" style="flex-wrap:wrap;">
                 <div style="flex:1; min-width:200px;">
-                    <img src="${book.urlPortada || 'https://via.placeholder.com/220x300?text=Sin+Portada'}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/220x300?text=Sin+Portada'">
+                    <img src="${book.coverUrl || 'https://via.placeholder.com/220x300?text=Sin+Portada'}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/220x300?text=Sin+Portada'">
                 </div>
                 <div style="flex:2; min-width:300px;">
-                    <h2 style="margin-bottom:0.5rem; color:var(--primary); font-size:2rem;">${book.titulo}</h2>
-                    <p style="font-size:1.2rem; margin-bottom:1rem; color:var(--text-muted);">${book.autor}</p>
-                    <p style="font-size:1.1rem; line-height:1.6; margin-bottom:1.5rem;">${book.descripcion || 'Sin descripción disponible.'}</p>
-                    <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1.5rem;">$${book.precio.toFixed(2)}</div>
+                    <h2 style="margin-bottom:0.5rem; color:var(--primary); font-size:2rem;">${book.title}</h2>
+                    <p style="font-size:1.2rem; margin-bottom:1rem; color:var(--text-muted);">${book.author}</p>
+                    <p style="font-size:1.1rem; line-height:1.6; margin-bottom:1.5rem;">${book.description || 'Sin descripción disponible.'}</p>
+                    <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1.5rem;">$${book.price.toFixed(2)}</div>
                     
                     <div class="flex gap-1">
                         <button class="btn btn-primary" style="flex:1;" onclick="addToCart('${book.id}')">🛒 Agregar al Carrito</button>

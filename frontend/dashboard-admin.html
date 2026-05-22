@@ -158,11 +158,11 @@
                     card.className = 'book-card';
                     card.innerHTML = `
                         <div style="background:var(--surface-light); height:160px; display:flex; align-items:center; justify-content:center;">
-                            ${book.urlPortada ? `<img src="${book.urlPortada}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
+                            ${book.coverUrl ? `<img src="${book.coverUrl}" style="height:100%; object-fit:cover; width:100%;" onerror="this.outerHTML='<span style=font-size:3rem>📚</span>'">` : '<span style="font-size:3rem">📚</span>'}
                         </div>
                         <div class="book-info">
-                            <h3 class="book-title">${book.titulo}</h3>
-                            <p class="book-author">${book.autor} — $${book.precio.toFixed(2)}</p>
+                            <h3 class="book-title">${book.title}</h3>
+                            <p class="book-author">${book.author} — $${book.price.toFixed(2)}</p>
                             <p style="color:var(--text-muted); font-size:0.8rem;">Seller: ${book.sellerEmail || 'N/A'}</p>
                             ${status === 'PENDIENTE' ? `
                                 <div class="flex gap-1 mt-1">
@@ -206,7 +206,7 @@
                     html += `<tr style="border-bottom:1px solid var(--surface-light);">
                         <td style="padding:0.8rem; font-family:monospace; font-size:0.85rem;">${o.id.substring(0, 8)}...</td>
                         <td style="padding:0.8rem;">${o.userId ? o.userId.substring(0, 8) + '...' : 'N/A'}</td>
-                        <td style="padding:0.8rem; color:var(--primary); font-weight:bold;">$${(o.totalAmount || 0).toFixed(2)}</td>
+                        <td style="padding:0.8rem; color:var(--primary); font-weight:bold;">$${(o.totalPrice || 0).toFixed(2)}</td>
                         <td style="padding:0.8rem;">${o.status || 'COMPLETADA'}</td>
                     </tr>`;
                 });

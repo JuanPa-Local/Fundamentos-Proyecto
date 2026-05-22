@@ -19,12 +19,12 @@ async function loadCart() {
         let total = 0;
 
         cart.items.forEach(item => {
-            total += item.precio;
+            total += item.price;
             html += `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-light); padding:1rem; border-radius:8px;">
                     <div>
-                        <h4 style="margin:0">${item.tituloLibro}</h4>
-                        <span style="color:var(--primary); font-weight:bold;">$${item.precio.toFixed(2)}</span>
+                        <h4 style="margin:0">${item.title}</h4>
+                        <span style="color:var(--primary); font-weight:bold;">$${item.price.toFixed(2)}</span>
                     </div>
                     <button class="btn btn-danger" onclick="removeFromCart('${item.libroId}')">Eliminar</button>
                 </div>
@@ -103,9 +103,9 @@ async function loadLibrary() {
                     <span style="font-size:3rem; color:var(--primary)">📖</span>
                 </div>
                 <div class="book-info">
-                    <h3 class="book-title">${libro.titulo}</h3>
-                    <p class="book-author">${libro.autor}</p>
-                    <button class="btn btn-primary mt-1" onclick="downloadBook('${libro.libroId}')">Descargar Seguro</button>
+                    <h3 class="book-title">${libro.title}</h3>
+                    <p class="book-author">${libro.author}</p>
+                    <button class="btn btn-primary mt-1" onclick="downloadBook('${libro.id}', '${libro.filePath || ''}')">Descargar Seguro</button>
                 </div>
             `;
             libraryGrid.appendChild(card);
@@ -116,7 +116,14 @@ async function loadLibrary() {
     }
 }
 
-async function downloadBook(libroId) {
+async function downloadBook(libroId, filePath) {
+    if (filePath) {
+        alert("Iniciando descarga desde tu biblioteca...");
+        window.open(filePath, '_blank');
+        return;
+    }
+    
+    // Fallback if no real file path
     const user = api.auth.getCurrentUser();
     try {
         // Generar enlace

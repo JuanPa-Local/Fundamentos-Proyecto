@@ -48,7 +48,7 @@ public class CarritoFacade {
             return nuevoCarrito;
         });
 
-        carrito.agregarItem(libroId, book.getTitle());
+        carrito.agregarItem(libroId, book.getTitle(), book.getPrice());
         carritoRepository.guardar(carrito, 7);
     }
 

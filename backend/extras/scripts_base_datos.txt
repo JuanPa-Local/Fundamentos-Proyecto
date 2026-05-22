@@ -1,0 +1,80 @@
+-- =========================================================================
+-- SCRIPTS PARA LIMPIAR Y POBLAR LA BASE DE DATOS (Completo)
+-- =========================================================================
+
+-- PASO 1: LIMPIAR LAS TABLAS ANTIGUAS
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS favorites CASCADE;
+DROP TABLE IF EXISTS books CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- PASO 2: ¡ARRANCA SPRING BOOT!
+-- Ejecuta BackendApplication.java para que Hibernate vuelva a crear las tablas.
+
+-- PASO 3: INSERTAR DATOS DE PRUEBA (Ejecuta esto DESPUÉS de que Spring Boot arranque)
+-- (El hash '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa' equivale a 'admin123', 'seller123', etc.)
+
+-- 3.1 Insertar Usuarios (5 Ejemplos)
+INSERT INTO users (id, email, password_hash, full_name, role, created_at, active) VALUES
+(gen_random_uuid(), 'admin@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Admin Supremo',   'ADMIN',  NOW(), true),
+(gen_random_uuid(), 'seller@openlib.com', '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Editorial Planeta', 'SELLER', NOW(), true),
+(gen_random_uuid(), 'seller2@openlib.com', '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Librería Nacional', 'SELLER', NOW(), true),
+(gen_random_uuid(), 'buyer@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Juan Pérez',  'BUYER',  NOW(), true),
+(gen_random_uuid(), 'buyer2@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Maria Gomez',  'BUYER',  NOW(), true);
+
+-- 3.2 Insertar Libros (5 Ejemplos)
+INSERT INTO books (id, titulo, autor, descripcion, precio, stock, categoria, status, url_portada, seller_id) VALUES
+(gen_random_uuid(), 'Clean Code', 'Robert C. Martin', 'Manual de código limpio', 45.00, 10, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Clean+Code', (SELECT id FROM users WHERE email = 'seller@openlib.com')),
+(gen_random_uuid(), 'The Pragmatic Programmer', 'Andrew Hunt', 'De novato a maestro', 40.00, 5, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Pragmatic', (SELECT id FROM users WHERE email = 'seller@openlib.com')),
+(gen_random_uuid(), 'Algoritmos', 'Thomas H. Cormen', 'Estructuras de datos', 55.00, 8, 'Ingeniería', 'PENDIENTE', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Algoritmos', (SELECT id FROM users WHERE email = 'seller2@openlib.com')),
+(gen_random_uuid(), '1984', 'George Orwell', 'Novela distópica clásica', 20.00, 15, 'Ficción', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=1984', (SELECT id FROM users WHERE email = 'seller2@openlib.com')),
+(gen_random_uuid(), 'El Principito', 'Antoine de Saint-Exupéry', 'Un cuento sobre la vida', 15.00, 20, 'Literatura', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Principito', (SELECT id FROM users WHERE email = 'seller@openlib.com'));
+
+-- 3.3 Insertar Órdenes (5 Ejemplos)
+INSERT INTO orders (id, user_id, book_id, total_amount, status, ordered_at)
+SELECT gen_random_uuid(),
+    (SELECT id FROM users WHERE email = 'buyer@openlib.com' LIMIT 1),
+    (SELECT id FROM books WHERE titulo = 'Clean Code' LIMIT 1),
+    45.00, 'COMPLETADA', NOW() - INTERVAL '2 hours';
+
+INSERT INTO orders (id, user_id, book_id, total_amount, status, ordered_at)
+SELECT gen_random_uuid(),
+    (SELECT id FROM users WHERE email = 'buyer@openlib.com' LIMIT 1),
+    (SELECT id FROM books WHERE titulo = 'The Pragmatic Programmer' LIMIT 1),
+    40.00, 'COMPLETADA', NOW() - INTERVAL '1 day';
+
+INSERT INTO orders (id, user_id, book_id, total_amount, status, ordered_at)
+SELECT gen_random_uuid(),
+    (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1),
+    (SELECT id FROM books WHERE titulo = 'El Principito' LIMIT 1),
+    15.00, 'PENDIENTE', NOW() - INTERVAL '3 hours';
+
+INSERT INTO orders (id, user_id, book_id, total_amount, status, ordered_at)
+SELECT gen_random_uuid(),
+    (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1),
+    (SELECT id FROM books WHERE titulo = '1984' LIMIT 1),
+    20.00, 'COMPLETADA', NOW() - INTERVAL '5 days';
+
+INSERT INTO orders (id, user_id, book_id, total_amount, status, ordered_at)
+SELECT gen_random_uuid(),
+    (SELECT id FROM users WHERE email = 'buyer@openlib.com' LIMIT 1),
+    (SELECT id FROM books WHERE titulo = 'El Principito' LIMIT 1),
+    15.00, 'COMPLETADA', NOW() - INTERVAL '10 days';
+
+-- 3.4 Insertar Reseñas (5 Ejemplos)
+INSERT INTO reviews (id, user_id, book_id, rating, comment, status) VALUES
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = 'Clean Code'), 5, 'Excelente libro, cambió mi vida como programador.', 'PUBLICADA'),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE titulo = 'Clean Code'), 4, 'Muy bueno, pero algo denso al final.', 'PUBLICADA'),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = 'The Pragmatic Programmer'), 5, 'Una joya, lectura obligatoria.', 'PUBLICADA'),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE titulo = 'El Principito'), 1, 'Spam irrelevante, me aburrió. (Este es un ejemplo para moderar)', 'REPORTADA'),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = '1984'), 5, 'Inquietantemente actual.', 'PUBLICADA');
+
+-- 3.5 Insertar Favoritos (5 Ejemplos)
+INSERT INTO favorites (id, user_id, book_id, created_at) VALUES
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = 'Clean Code'), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = 'Algoritmos'), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE titulo = '1984'), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE titulo = 'El Principito'), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer@openlib.com'), (SELECT id FROM books WHERE titulo = 'The Pragmatic Programmer'), NOW());

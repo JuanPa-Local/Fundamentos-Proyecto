@@ -26,7 +26,7 @@ public class SecurityConfig {
                                          "/api/users/login", "/api/users/hash-test").permitAll()
                         // US-029: Permitir acceso a API completa (protección de roles se implementa
                         // a nivel de servicio/controlador ya que es app JavaFX, no un API público)
-                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/api/**", "/error").permitAll()
                         // Actuator para monitoreo (US-028)
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()

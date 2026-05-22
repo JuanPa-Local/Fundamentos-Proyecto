@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/openlib_db
     username: openlib_user
-    password: openlib_pass
+    password: openlib_database
     driver-class-name: org.postgresql.Driver
 
   jpa:

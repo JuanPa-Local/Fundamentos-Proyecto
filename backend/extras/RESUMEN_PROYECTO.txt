@@ -1,0 +1,78 @@
+=========================================================
+      RESUMEN Y ESTRUCTURA DEL PROYECTO OPENLIB MARKET
+=========================================================
+
+1. ¿QUÉ SE HA HECHO RECIENTEMENTE?
+---------------------------------------------------------
+El proyecto ha pasado por una refactorización masiva para migrar de una arquitectura local (JavaFX) a una arquitectura Web moderna (Cliente-Servidor).
+
+* Eliminación de JavaFX: Se erradicó por completo el uso de JavaFX debido a los persistentes problemas de entorno.
+* API RESTful (Backend): Se adaptaron todos los casos de uso y repositorios para que expongan sus funciones a través de controladores REST (JSON).
+* Nuevo Frontend (Web): Se creó desde cero una interfaz web en HTML, CSS y JS sin frameworks complejos. Cuenta con un diseño "Dark Premium" atractivo.
+* Finalización de los 30 Planes de Diseño: Se cumplió con el 100% de la lógica descrita en la carpeta `desing/`, implementando en el backend y frontend funciones como:
+  - Catálogo, búsquedas y filtros por categoría.
+  - Carrito de compras y Checkout simulado.
+  - Gestión de perfiles y autenticación basada en Roles (Admin, Buyer, Seller).
+  - Publicación y moderación de libros.
+  - Sistema de reseñas y favoritos.
+  - Historial de órdenes y Biblioteca personal para descarga.
+
+2. ESTRUCTURA DEL PROYECTO
+---------------------------------------------------------
+El proyecto está dividido en dos grandes bloques completamente independientes que se comunican por red (HTTP/REST).
+
+📁 Raíz: c:\Users\jupas\Downloads\Openlib Market\
+
+├── 📁 backend/ (El Servidor - Spring Boot / Java)
+│   ├── docker-compose.yml     -> Contiene la infraestructura de Base de Datos (PostgreSQL y Redis).
+│   ├── pom.xml                -> Archivo de dependencias de Maven.
+│   ├── 📁 desing/             -> Contiene los 30 archivos Markdown con la planificación original del sistema.
+│   └── 📁 src/main/
+│       ├── 📁 resources/      -> Configuraciones (application.yml).
+│       └── 📁 java/com/openlib/backend/
+│           ├── BackendApplication.java -> Archivo ejecutable principal.
+│           └── 📁 domain/     -> Lógica de negocio orientada a dominios (DDD).
+│               ├── book/      -> Libros, Categorías, Reseñas (Reviews).
+│               ├── order/     -> Órdenes, Carrito, Favoritos, Descargas.
+│               ├── user/      -> Autenticación, Roles, Perfiles.
+│               └── common/    -> Excepciones globales y utilidades.
+│
+└── 📁 frontend/ (El Cliente - HTML / CSS / JS)
+    ├── index.html             -> Página principal de aterrizaje (Landing Page).
+    ├── login.html / register.html -> Vistas de autenticación.
+    ├── dashboard-buyer.html   -> Panel del comprador (Catálogo, Carrito, Favoritos, Compras).
+    ├── dashboard-seller.html  -> Panel del vendedor (Publicar libros, Mis Ventas).
+    ├── dashboard-admin.html   -> Panel del administrador (Moderar usuarios, reseñas y libros).
+    ├── 📁 css/
+    │   └── main.css           -> Estilos de diseño Dark Premium.
+    └── 📁 js/                 -> Lógica del navegador.
+        ├── api.js             -> Utilidad para hacer peticiones fetch al backend en http://localhost:8080/api
+        ├── auth.js            -> Manejo de sesión (simulada en localStorage).
+        ├── buyer.js           -> Lógica exclusiva de la vista del comprador (Modal, Reseñas, Historial).
+        ├── cart.js            -> Manejo del carrito de compras.
+        └── catalog.js         -> Lógica de renderizado del catálogo.
+
+3. TECNOLOGÍAS UTILIZADAS
+---------------------------------------------------------
+* Backend: Java 24, Spring Boot 3, Spring Data JPA.
+* Base de Datos Relacional: PostgreSQL (Core del negocio).
+* Base de Datos En Memoria: Redis (Para persistir sesiones y el Carrito de compras rápido).
+* Frontend: Vanilla HTML5, CSS3 y JavaScript ES6 (Comunicación vía Fetch API).
+
+4. PASOS PARA EJECUTAR EN EL DÍA A DÍA
+---------------------------------------------------------
+1. Levantar bases de datos: Abrir terminal en `backend/` y correr `docker-compose up -d`.
+2. Levantar el Backend: Ejecutar `BackendApplication.java` desde tu IDE (IntelliJ).
+3. Abrir el Frontend: Abrir el archivo `frontend/index.html` en el navegador.
+
+5. USUARIOS DE PRUEBA
+---------------------------------------------------------
+Al arrancar la aplicación por primera vez, se crea automáticamente un usuario administrador:
+* Email: admin@openlib.com
+* Password: admin123
+
+Puedes registrar tus propios usuarios (Comprador o Vendedor) desde la página de registro del Frontend.
+
+=========================================================
+      ¡El proyecto está listo para ser probado!
+=========================================================

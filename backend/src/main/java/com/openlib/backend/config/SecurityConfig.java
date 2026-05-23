@@ -30,8 +30,7 @@ public class SecurityConfig {
                         // Actuator para monitoreo (US-028)
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
-                )
-                .httpBasic(basic -> {});
+                );
 
         return http.build();
     }

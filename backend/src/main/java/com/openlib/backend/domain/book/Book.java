@@ -9,9 +9,11 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "books")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -54,19 +56,18 @@ public class Book {
     @Builder.Default
     private Double price = 0.0;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder.Default
-    private int downloadCount = 0;
+    private Integer downloadCount = 0;
 
     // US-024: Calificación promedio y número de reseñas
     @Builder.Default
-    private double averageRating = 0.0;
+    private Double averageRating = 0.0;
 
     @Builder.Default
-    private int reviewCount = 0;
+    private Integer reviewCount = 0;
 
     // Getters y Setters
     public UUID getId() { return id; }
@@ -96,8 +97,8 @@ public class Book {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public int getDownloadCount() { return downloadCount; }
-    public void setDownloadCount(int downloadCount) { this.downloadCount = downloadCount; }
+    public Integer getDownloadCount() { return downloadCount; }
+    public void setDownloadCount(Integer downloadCount) { this.downloadCount = downloadCount != null ? downloadCount : 0; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -111,11 +112,11 @@ public class Book {
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
 
-    public double getAverageRating() { return averageRating; }
-    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating != null ? averageRating : 0.0; }
 
-    public int getReviewCount() { return reviewCount; }
-    public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
+    public Integer getReviewCount() { return reviewCount; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount != null ? reviewCount : 0; }
 
     // US-014: Comportamientos de aprobación del libro (excepciones tipadas)
     public void approve() {
@@ -141,5 +142,12 @@ public class Book {
         double totalActual = this.averageRating * this.reviewCount;
         this.reviewCount++;
         this.averageRating = (totalActual + nuevaCalificacion) / this.reviewCount;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    container_name: openlib_postgres
+    environment:
+      POSTGRES_DB: openlib_db
+      POSTGRES_USER: openlib_user
+      POSTGRES_PASSWORD: openlib_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - openlib_network
+
+  cache:
+    image: redis:7-alpine
+    container_name: openlib_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - openlib_network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: openlib_backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=cache
+    depends_on:
+      - db
+      - cache
+    networks:
+      - openlib_network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: openlib_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - openlib_network
+
+volumes:
+  postgres_data:
+
+networks:
+  openlib_network:
+    driver: bridge

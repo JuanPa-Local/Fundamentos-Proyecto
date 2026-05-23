@@ -566,5 +566,113 @@ URLS PRINCIPALES DE LA API:
   7. Hexagonal    → Puertos (interfaces) + Adaptadores (impls)
 
 =========================================================
+8. DOCKERIZACIÓN Y CONTENEDORES (Docker Desktop)
+=========================================================
+
+El proyecto está 100% dockerizado usando `docker-compose`.
+
+  1. openlib_postgres (Base de Datos):
+     - Imagen: postgres:16
+     - Puerto: 5432
+     - Guarda los datos de forma persistente.
+
+  2. openlib_redis (Caché y Sesiones):
+     - Imagen: redis:7-alpine
+     - Puerto: 6379
+     - Maneja el carrito de compras en memoria.
+
+  3. openlib_backend (Spring Boot API):
+     - Compilado multi-etapa: Usa Maven para compilar y 
+       `eclipse-temurin:21-jre-alpine` para ejecutar.
+     - Puerto: 8080 (Aquí se envían las peticiones Postman)
+     - Se conecta internamente a `db` y `cache`.
+
+  4. openlib_frontend (Servidor Web Estático):
+     - Imagen: nginx:alpine
+     - Puerto: 80 (Acceso vía http://localhost)
+     - Sirve los archivos HTML/JS/CSS de forma ultrarrápida.
+
+Para ver que todo está bien en Docker Desktop:
+- Ve a la pestaña "Containers".
+- Deberías ver un grupo llamado "openlib market" (o similar
+  según el nombre de la carpeta).
+- Al expandirlo, deben aparecer los 4 contenedores en verde (Running).
+- Si revisas los logs de "openlib_backend", deberías ver
+  el logo de Spring Boot y el mensaje "Started BackendApplication".
+
+
+=========================================================
+9. GUÍA DE APIS PARA POSTMAN
+=========================================================
+
+Para probar el proyecto con Postman, asegúrate de tener
+los contenedores corriendo. La URL base es:
+http://localhost:8080/api
+
+A continuación, ejemplos de los Endpoints más importantes
+para mostrar a tu profesor:
+
+--- A. AUTENTICACIÓN Y USUARIOS (/api/users) ---
+
+1. Registrar Vendedor (POST /api/users/register)
+   JSON Body:
+   {
+     "email": "nuevo.seller@openlib.com",
+     "password": "password123",
+     "fullName": "Librería Central",
+     "role": "SELLER"
+   }
+
+2. Iniciar Sesión (POST /api/users/login)
+   JSON Body:
+   {
+     "email": "admin@openlib.com",
+     "password": "admin"
+   }
+   (Retorna el objeto del usuario logueado con su rol).
+
+--- B. LIBROS Y CATÁLOGO (/api/books) ---
+
+3. Ver Catálogo Público (GET /api/books/catalog)
+   - Sin body.
+   - Retorna la lista de todos los libros aprobados.
+
+4. Publicar Libro (POST /api/books)
+   JSON Body:
+   {
+     "title": "Clean Code",
+     "author": "Robert C. Martin",
+     "description": "Guía de buenas prácticas",
+     "isbn": "978-0132350884",
+     "price": 35.50,
+     "category": "Programación",
+     "coverUrl": "https://link-a-imagen.jpg",
+     "filePath": "https://link-a-pdf.pdf",
+     "sellerEmail": "seller@openlib.com"
+   }
+
+5. Aprobar Libro (Admin) (POST /api/books/{id_del_libro}/approve)
+   - Reemplaza {id_del_libro} con el ID generado en el paso 4.
+
+--- C. CARRITO DE COMPRAS (/api/cart) ---
+
+6. Ver Carrito (GET /api/cart/{id_del_comprador})
+
+7. Agregar al Carrito (POST /api/cart/{id_comprador}/items/{id_libro})
+   - Sin body.
+
+--- D. COMPRA Y DESCARGA (/api/orders & /api/downloads) ---
+
+8. Historial de Órdenes (GET /api/orders/history/{id_comprador})
+
+9. Generar Link Descarga Segura (POST /api/downloads/generate)
+   JSON Body:
+   {
+     "buyerId": "id-del-comprador",
+     "libroId": "id-del-libro"
+   }
+   (Retorna un token de un solo uso para descargar el libro).
+
+=========================================================
       ¡El proyecto está listo para ser probado!
 =========================================================

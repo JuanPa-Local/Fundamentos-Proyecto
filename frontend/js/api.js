@@ -13,11 +13,9 @@ const api = {
             ...options.headers
         };
 
-        // Si hubiera JWT o Basic Auth lo mandaríamos aquí. 
-        // Por ahora pasamos sin Auth estricta a nivel HTTP, el backend verifica UUIDs
-        if (user && user.email) {
-            headers['Authorization'] = 'Basic ' + btoa(user.email + ':' + localStorage.getItem('openlib_pwd'));
-        }
+        // Eliminamos el envío del header Authorization: Basic
+        // ya que Spring Security lo intercepta y rechaza al no tener un UserDetailsService configurado.
+        // La autenticación en este proyecto se maneja a nivel de aplicación (UUIDs en requests).
 
         const config = {
             ...options,

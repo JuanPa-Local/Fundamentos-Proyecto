@@ -32,7 +32,7 @@ public class CarritoFacade {
         Book book = bookRepository.findById(libroId)
                 .orElseThrow(() -> new LibroNoDisponibleException("El libro no existe."));
 
-        if (!"APPROVED".equalsIgnoreCase(book.getStatus())) {
+        if (!"APROBADO".equalsIgnoreCase(book.getStatus())) {
             throw new LibroNoDisponibleException("El libro no está disponible para la compra.");
         }
 

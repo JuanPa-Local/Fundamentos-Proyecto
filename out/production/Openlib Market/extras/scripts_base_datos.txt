@@ -1,8 +1,11 @@
 -- =========================================================================
--- SCRIPTS PARA LIMPIAR Y POBLAR LA BASE DE DATOS (Completo y Actualizado)
+-- SCRIPTS PARA LIMPIAR, CREAR Y POBLAR LA BASE DE DATOS
 -- =========================================================================
+-- Ejecuta este script COMPLETO en pgAdmin ANTES de iniciar el backend.
 
--- PASO 1: LIMPIAR LAS TABLAS ANTIGUAS
+-- -------------------------------------------------------------------------
+-- PASO 1: LIMPIAR TABLAS ANTIGUAS
+-- -------------------------------------------------------------------------
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
@@ -10,36 +13,103 @@ DROP TABLE IF EXISTS favorites CASCADE;
 DROP TABLE IF EXISTS books CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
--- PASO 2: ¡ARRANCA SPRING BOOT!
--- Si usas Docker Desktop, asegúrate de que el contenedor "openlib_backend" 
--- esté corriendo para que Hibernate vuelva a crear las tablas vacías automáticamente.
+-- -------------------------------------------------------------------------
+-- PASO 2: CREAR TABLAS (Misma estructura que usa Spring Boot)
+-- -------------------------------------------------------------------------
 
--- PASO 3: INSERTAR DATOS DE PRUEBA (Ejecuta esto en Postgres DESPUÉS de que Spring Boot arranque)
--- (El hash '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa' equivale a 'admin123')
--- TODOS LOS USUARIOS USAN LA CONTRASEÑA: admin123
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    active BOOLEAN NOT NULL,
+    phone VARCHAR(255),
+    address VARCHAR(255),
+    avatar_url VARCHAR(255)
+);
+
+CREATE TABLE books (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    isbn VARCHAR(255),
+    description TEXT,
+    category VARCHAR(255),
+    file_path VARCHAR(255),
+    cover_url VARCHAR(255),
+    status VARCHAR(30) DEFAULT 'PENDIENTE',
+    seller_email VARCHAR(255),
+    rejection_reason TEXT,
+    price DOUBLE PRECISION DEFAULT 0.0,
+    created_at TIMESTAMP NOT NULL,
+    download_count INTEGER DEFAULT 0,
+    average_rating DOUBLE PRECISION DEFAULT 0.0,
+    review_count INTEGER DEFAULT 0
+);
+
+CREATE TABLE orders (
+    id UUID PRIMARY KEY,
+    user_id UUID,
+    book_id UUID,
+    status VARCHAR(30) DEFAULT 'COMPLETED',
+    total_price DOUBLE PRECISION DEFAULT 0.0,
+    ordered_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_order_book FOREIGN KEY (book_id) REFERENCES books (id)
+);
+
+CREATE TABLE reviews (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    book_id UUID NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP NOT NULL,
+    status VARCHAR(30) DEFAULT 'ACTIVA',
+    CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_review_book FOREIGN KEY (book_id) REFERENCES books (id),
+    CONSTRAINT uk_review_user_book UNIQUE (user_id, book_id)
+);
+
+CREATE TABLE favorites (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    book_id UUID NOT NULL,
+    added_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_favorite_book FOREIGN KEY (book_id) REFERENCES books (id),
+    CONSTRAINT uk_favorite_user_book UNIQUE (user_id, book_id)
+);
+
+-- -------------------------------------------------------------------------
+-- PASO 3: INSERTAR DATOS DE PRUEBA
+-- -------------------------------------------------------------------------
+-- La contraseña para todos es: 1234 (hash '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS')
 
 -- 3.1 Insertar Usuarios (1 Admin, 2 Sellers, 2 Buyers)
 INSERT INTO users (id, email, password_hash, full_name, role, created_at, active) VALUES
-(gen_random_uuid(), 'admin@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Administrador Principal', 'ADMIN',  NOW(), true),
-(gen_random_uuid(), 'seller1@openlib.com', '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Librería Central', 'SELLER', NOW(), true),
-(gen_random_uuid(), 'seller2@openlib.com', '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Editorial Universitaria', 'SELLER', NOW(), true),
-(gen_random_uuid(), 'buyer1@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Comprador Lector 1',  'BUYER',  NOW(), true),
-(gen_random_uuid(), 'buyer2@openlib.com',  '$2a$10$MNDEYjqc8ztXu9p2ijULsurJngVSaFJ2s26TrczAeKpa0myg9X7xa', 'Estudiante Activo',  'BUYER',  NOW(), true);
+(gen_random_uuid(), 'admin@openlib.com',  '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Administrador Principal', 'ADMIN',  NOW(), true),
+(gen_random_uuid(), 'seller1@openlib.com', '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Librería Central', 'SELLER', NOW(), true),
+(gen_random_uuid(), 'seller2@openlib.com', '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Editorial Universitaria', 'SELLER', NOW(), true),
+(gen_random_uuid(), 'buyer1@openlib.com',  '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Comprador Lector 1',  'BUYER',  NOW(), true),
+(gen_random_uuid(), 'buyer2@openlib.com',  '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Estudiante Activo',  'BUYER',  NOW(), true);
 
--- 3.2 Insertar Libros (Asignados a los Sellers)
-INSERT INTO books (id, title, author, description, price, stock, category, status, cover_url, file_path, seller_email, created_at, download_count, average_rating, review_count) VALUES
-(gen_random_uuid(), 'Arquitectura de Software', 'Robert C. Martin', 'Diseño avanzado', 45.00, 10, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Arquitectura', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 10, 4.5, 2),
-(gen_random_uuid(), 'Patrones de Diseño', 'GoF', 'Clásico de desarrollo', 40.00, 5, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Patrones', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 5, 5.0, 1),
-(gen_random_uuid(), 'Introducción a Java 21', 'Oracle', 'Novedades del lenguaje', 30.00, 15, 'Ingeniería', 'PENDIENTE', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Java21', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 0, 0, 0),
-(gen_random_uuid(), 'Física Cuántica Básica', 'Stephen Hawking', 'Para principiantes', 25.00, 20, 'Ciencia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Fisica', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 20, 4.8, 3),
-(gen_random_uuid(), 'Historia Universal', 'Varios Autores', 'Compendio general', 15.00, 50, 'Historia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Historia', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 2, 3.5, 1);
+-- 3.2 Insertar Libros (Asignados a los Sellers) - NOTA: Se eliminó la columna "stock"
+INSERT INTO books (id, title, author, description, price, category, status, cover_url, file_path, seller_email, created_at, download_count, average_rating, review_count) VALUES
+(gen_random_uuid(), 'Arquitectura de Software', 'Robert C. Martin', 'Diseño avanzado', 45.00, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Arquitectura', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 10, 4.5, 2),
+(gen_random_uuid(), 'Patrones de Diseño', 'GoF', 'Clásico de desarrollo', 40.00, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Patrones', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 5, 5.0, 1),
+(gen_random_uuid(), 'Introducción a Java 21', 'Oracle', 'Novedades del lenguaje', 30.00, 'Ingeniería', 'PENDIENTE', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Java21', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 0, 0, 0),
+(gen_random_uuid(), 'Física Cuántica Básica', 'Stephen Hawking', 'Para principiantes', 25.00, 'Ciencia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Fisica', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 20, 4.8, 3),
+(gen_random_uuid(), 'Historia Universal', 'Varios Autores', 'Compendio general', 15.00, 'Historia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Historia', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 2, 3.5, 1);
 
 -- 3.3 Insertar Órdenes (Asignadas a los Buyers)
 INSERT INTO orders (id, user_id, book_id, total_price, status, ordered_at)
 SELECT gen_random_uuid(),
     (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1),
     (SELECT id FROM books WHERE title = 'Arquitectura de Software' LIMIT 1),
-    45.00, 'COMPLETADA', NOW() - INTERVAL '2 days';
+    45.00, 'COMPLETED', NOW() - INTERVAL '2 days';
 
 INSERT INTO orders (id, user_id, book_id, total_price, status, ordered_at)
 SELECT gen_random_uuid(),
@@ -51,24 +121,24 @@ INSERT INTO orders (id, user_id, book_id, total_price, status, ordered_at)
 SELECT gen_random_uuid(),
     (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1),
     (SELECT id FROM books WHERE title = 'Historia Universal' LIMIT 1),
-    15.00, 'COMPLETADA', NOW() - INTERVAL '5 days';
+    15.00, 'COMPLETED', NOW() - INTERVAL '5 days';
 
 INSERT INTO orders (id, user_id, book_id, total_price, status, ordered_at)
 SELECT gen_random_uuid(),
     (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1),
     (SELECT id FROM books WHERE title = 'Patrones de Diseño' LIMIT 1),
-    40.00, 'COMPLETADA', NOW() - INTERVAL '3 hours';
+    40.00, 'COMPLETED', NOW() - INTERVAL '3 hours';
 
 -- 3.4 Insertar Reseñas (Reviews dadas por los Buyers)
 INSERT INTO reviews (id, user_id, book_id, rating, comment, status, created_at) VALUES
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com'), (SELECT id FROM books WHERE title = 'Arquitectura de Software'), 5, 'Excelente, muy recomendado.', 'PUBLICADA', NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com'), (SELECT id FROM books WHERE title = 'Física Cuántica Básica'), 4, 'Un poco complejo pero buen libro.', 'PUBLICADA', NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE title = 'Patrones de Diseño'), 5, 'Perfecto para la universidad.', 'PUBLICADA', NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE title = 'Historia Universal'), 2, 'Faltan detalles importantes, parece un borrador.', 'REPORTADA', NOW());
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Arquitectura de Software' LIMIT 1), 5, 'Excelente, muy recomendado.', 'ACTIVA', NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Física Cuántica Básica' LIMIT 1), 4, 'Un poco complejo pero buen libro.', 'ACTIVA', NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Patrones de Diseño' LIMIT 1), 5, 'Perfecto para la universidad.', 'ACTIVA', NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Historia Universal' LIMIT 1), 2, 'Faltan detalles importantes, parece un borrador.', 'REPORTADA', NOW());
 
 -- 3.5 Insertar Favoritos (Wishlist de los Buyers)
-INSERT INTO favorites (id, user_id, book_id, created_at) VALUES
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com'), (SELECT id FROM books WHERE title = 'Patrones de Diseño'), NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com'), (SELECT id FROM books WHERE title = 'Historia Universal'), NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE title = 'Física Cuántica Básica'), NOW()),
-(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com'), (SELECT id FROM books WHERE title = 'Arquitectura de Software'), NOW());
+INSERT INTO favorites (id, user_id, book_id, added_at) VALUES
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Patrones de Diseño' LIMIT 1), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Historia Universal' LIMIT 1), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Física Cuántica Básica' LIMIT 1), NOW()),
+(gen_random_uuid(), (SELECT id FROM users WHERE email = 'buyer2@openlib.com' LIMIT 1), (SELECT id FROM books WHERE title = 'Arquitectura de Software' LIMIT 1), NOW());

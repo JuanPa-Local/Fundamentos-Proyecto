@@ -239,15 +239,17 @@
                 let total = 0;
                 let html = '<div style="display:flex; flex-direction:column; gap:1rem;">';
                 orders.forEach(order => {
-                    total += order.totalAmount || 0;
+                    total += order.totalPrice || 0;
+                    const bookTitle = order.book ? order.book.title : 'Libro';
+                    const fecha = order.orderedAt ? new Date(order.orderedAt).toLocaleDateString() : '';
                     html += `
                         <div style="background:var(--surface); padding:1rem; border-radius:8px; border:1px solid var(--surface-light);">
                             <div class="flex space-between" style="align-items:center;">
                                 <div>
-                                    <strong>${order.id.substring(0, 8)}...</strong>
-                                    <span style="color:var(--text-muted); margin-left:1rem;">${order.fecha || ''}</span>
+                                    <strong>${bookTitle}</strong>
+                                    <span style="color:var(--text-muted); margin-left:1rem;">${fecha}</span>
                                 </div>
-                                <span style="color:var(--primary); font-weight:bold;">$${(order.totalAmount || 0).toFixed(2)}</span>
+                                <span style="color:var(--primary); font-weight:bold;">$${(order.totalPrice || 0).toFixed(2)}</span>
                             </div>
                         </div>`;
                 });

@@ -8,6 +8,8 @@
 -- -------------------------------------------------------------------------
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS book_categories CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS favorites CASCADE;
 DROP TABLE IF EXISTS books CASCADE;
@@ -30,13 +32,17 @@ CREATE TABLE users (
     avatar_url VARCHAR(255)
 );
 
+CREATE TABLE categories (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
 CREATE TABLE books (
     id UUID PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
     isbn VARCHAR(255),
     description TEXT,
-    category VARCHAR(255),
     file_path VARCHAR(255),
     cover_url VARCHAR(255),
     status VARCHAR(30) DEFAULT 'PENDIENTE',
@@ -47,6 +53,14 @@ CREATE TABLE books (
     download_count INTEGER DEFAULT 0,
     average_rating DOUBLE PRECISION DEFAULT 0.0,
     review_count INTEGER DEFAULT 0
+);
+
+CREATE TABLE book_categories (
+    book_id UUID NOT NULL,
+    category_name VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_book_categories_book FOREIGN KEY (book_id) REFERENCES books (id),
+    CONSTRAINT fk_book_categories_cat FOREIGN KEY (category_name) REFERENCES categories (name),
+    PRIMARY KEY (book_id, category_name)
 );
 
 CREATE TABLE orders (
@@ -96,15 +110,32 @@ INSERT INTO users (id, email, password_hash, full_name, role, created_at, active
 (gen_random_uuid(), 'buyer1@openlib.com',  '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Comprador Lector 1',  'BUYER',  NOW(), true),
 (gen_random_uuid(), 'buyer2@openlib.com',  '$2a$10$j2zL.Wiy8Auj9WKRrhRe6.cFKHQGsz7Rg2k7KHy1g7DETyUm8lEWS', 'Estudiante Activo',  'BUYER',  NOW(), true);
 
--- 3.2 Insertar Libros (Asignados a los Sellers) - NOTA: Se eliminó la columna "stock"
-INSERT INTO books (id, title, author, description, price, category, status, cover_url, file_path, seller_email, created_at, download_count, average_rating, review_count) VALUES
-(gen_random_uuid(), 'Arquitectura de Software', 'Robert C. Martin', 'Diseño avanzado', 45.00, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Arquitectura', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 10, 4.5, 2),
-(gen_random_uuid(), 'Patrones de Diseño', 'GoF', 'Clásico de desarrollo', 40.00, 'Programación', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Patrones', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 5, 5.0, 1),
-(gen_random_uuid(), 'Introducción a Java 21', 'Oracle', 'Novedades del lenguaje', 30.00, 'Ingeniería', 'PENDIENTE', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Java21', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller1@openlib.com', NOW(), 0, 0, 0),
-(gen_random_uuid(), 'Física Cuántica Básica', 'Stephen Hawking', 'Para principiantes', 25.00, 'Ciencia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Fisica', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 20, 4.8, 3),
-(gen_random_uuid(), 'Historia Universal', 'Varios Autores', 'Compendio general', 15.00, 'Historia', 'APROBADO', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Historia', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'seller2@openlib.com', NOW(), 2, 3.5, 1);
+-- 3.1.5 Insertar Categorías Iniciales
+INSERT INTO categories (id, name) VALUES
+(gen_random_uuid(), 'Programación'),
+(gen_random_uuid(), 'Ingeniería'),
+(gen_random_uuid(), 'Ciencia'),
+(gen_random_uuid(), 'Historia');
+-- 3.2 Insertar Libros (books)
+-- Nota: los IDs se asignan estáticamente para relacionarlos fácilmente luego
+INSERT INTO books (id, title, author, isbn, description, file_path, cover_url, status, seller_email, price, created_at) VALUES
+('a34b420a-9968-462b-bb8d-bb1891aba29c', 'Arquitectura de Software', 'Robert C. Martin', '978-0-13-449416-6', 'Diseño avanzado', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Arquitectura', 'APROBADO', 'seller1@openlib.com', 45.00, NOW()),
+('586d943b-dbbf-46fd-bb8f-0e2208f58a21', 'Patrones de Diseño', 'GoF', '978-0-201-63361-0', 'Clásico de desarrollo', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Patrones', 'APROBADO', 'seller1@openlib.com', 40.00, NOW()),
+('1cf8b76c-3dc8-4687-b9c2-5f40f09bba1e', 'Introducción a Java 21', 'Oracle', '978-0-13-468599-1', 'Novedades del lenguaje', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Java21', 'PENDIENTE', 'seller1@openlib.com', 30.00, NOW()),
+('d31e9c5f-6a68-4f81-a67b-1b0b7534c56e', 'Física Cuántica Básica', 'Stephen Hawking', '978-0-553-38016-3', 'Para principiantes', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Fisica', 'APROBADO', 'seller2@openlib.com', 25.00, NOW()),
+('b663b6ca-c3e0-47b2-bd74-e8f0003b749d', 'Historia Universal', 'Varios Autores', '978-84-376-0494-7', 'Compendio general', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://via.placeholder.com/220x300/1a1a1a/00d4ff?text=Historia', 'APROBADO', 'seller2@openlib.com', 15.00, NOW());
 
--- 3.3 Insertar Órdenes (Asignadas a los Buyers)
+-- 3.3 Insertar Relaciones de Categorías (book_categories)
+INSERT INTO book_categories (book_id, category_name) VALUES
+('a34b420a-9968-462b-bb8d-bb1891aba29c', 'Programación'),
+('a34b420a-9968-462b-bb8d-bb1891aba29c', 'Ingeniería'),
+('586d943b-dbbf-46fd-bb8f-0e2208f58a21', 'Programación'),
+('1cf8b76c-3dc8-4687-b9c2-5f40f09bba1e', 'Programación'),
+('1cf8b76c-3dc8-4687-b9c2-5f40f09bba1e', 'Ingeniería'),
+('d31e9c5f-6a68-4f81-a67b-1b0b7534c56e', 'Ciencia'),
+('b663b6ca-c3e0-47b2-bd74-e8f0003b749d', 'Historia');
+
+-- 3.4 Insertar Órdenes (Asignadas a los Buyers)
 INSERT INTO orders (id, user_id, book_id, total_price, status, ordered_at)
 SELECT gen_random_uuid(),
     (SELECT id FROM users WHERE email = 'buyer1@openlib.com' LIMIT 1),

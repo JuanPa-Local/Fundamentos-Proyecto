@@ -48,15 +48,16 @@
                         <label for="descripcion">Descripción</label>
                         <input type="text" id="descripcion">
                     </div>
-                    <div class="flex gap-1">
-                        <div class="form-group" style="flex:1;">
-                            <label for="precio">Precio (USD)</label>
-                            <input type="number" id="precio" step="0.01" required>
+                    <div class="form-group">
+                        <label for="precio">Precio (USD)</label>
+                        <input type="number" id="precio" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categorías <span style="color:var(--text-muted); font-size:0.85rem;">(selecciona una o más)</span></label>
+                        <div id="categoriesContainer" style="display:flex; flex-wrap:wrap; gap:0.6rem; padding:0.75rem; background:var(--surface-light); border-radius:8px; max-height:160px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05);">
+                            <span style="color:var(--text-muted); font-size:0.85rem;">Cargando categorías...</span>
                         </div>
-                        <div class="form-group" style="flex:1;">
-                            <label for="categoria">Categoría</label>
-                            <input type="text" id="categoria" placeholder="Ficción, Tecnología...">
-                        </div>
+                        <div id="noCategoryError" style="display:none; color:var(--danger); font-size:0.85rem; margin-top:0.25rem;">Selecciona al menos una categoría.</div>
                     </div>
                     <div class="form-group">
                         <label for="urlPortada">URL de Portada (Imagen)</label>
@@ -125,11 +126,48 @@
                     document.getElementById(`nav-${v}`).classList.add('active');
 
                     if (v === 'mybooks') { document.getElementById('viewTitle').textContent = 'Mis Libros'; loadMyBooks(); }
-                    if (v === 'publish') document.getElementById('viewTitle').textContent = 'Publicar Libro';
+                    if (v === 'publish') { 
+                        document.getElementById('viewTitle').textContent = 'Publicar Libro';
+                        loadCategoriesForSelect();
+                    }
                     if (v === 'sales') { document.getElementById('viewTitle').textContent = 'Mis Ventas'; loadSales(); }
                     if (v === 'profile') { document.getElementById('viewTitle').textContent = 'Mi Perfil'; loadProfile(); }
                 });
             });
+
+            async function loadCategoriesForSelect() {
+                const container = document.getElementById('categoriesContainer');
+                try {
+                    const categories = await api.get('/books/categories');
+                    if (!categories || categories.length === 0) {
+                        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No hay categorías creadas aún. El admin debe crearlas primero.</span>';
+                        return;
+                    }
+                    container.innerHTML = '';
+                    categories.forEach(c => {
+                        const id = `cat_${c.replace(/\s+/g, '_')}`;
+                        const label = document.createElement('label');
+                        label.htmlFor = id;
+                        label.style.cssText = 'display:flex; align-items:center; gap:0.4rem; background:var(--surface); padding:0.4rem 0.75rem; border-radius:20px; cursor:pointer; font-size:0.9rem; border:1px solid rgba(255,255,255,0.08); transition:all 0.2s;';
+                        label.innerHTML = `<input type="checkbox" id="${id}" value="${c}" style="accent-color:var(--primary); width:15px; height:15px;"> ${c}`;
+                        label.querySelector('input').addEventListener('change', (e) => {
+                            if (e.target.checked) {
+                                label.style.background = 'var(--primary)';
+                                label.style.color = '#fff';
+                                label.style.borderColor = 'var(--primary)';
+                            } else {
+                                label.style.background = 'var(--surface)';
+                                label.style.color = '';
+                                label.style.borderColor = 'rgba(255,255,255,0.08)';
+                            }
+                        });
+                        container.appendChild(label);
+                    });
+                } catch (e) {
+                    container.innerHTML = '<span style="color:var(--danger);">Error cargando categorías.</span>';
+                    console.error('Error loading categories', e);
+                }
+            }
 
             loadMyBooks();
 
@@ -159,6 +197,18 @@
             document.getElementById('publishForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const errDiv = document.getElementById('publishError');
+                const noCatErr = document.getElementById('noCategoryError');
+
+                // Recopilar categorías marcadas
+                const checkedBoxes = document.querySelectorAll('#categoriesContainer input[type="checkbox"]:checked');
+                const selectedCategories = Array.from(checkedBoxes).map(cb => cb.value);
+
+                if (selectedCategories.length === 0) {
+                    noCatErr.style.display = 'block';
+                    return;
+                }
+                noCatErr.style.display = 'none';
+
                 try {
                     errDiv.style.display = 'none';
                     await api.post('/books', {
@@ -166,7 +216,7 @@
                         author: document.getElementById('autor').value,
                         description: document.getElementById('descripcion').value,
                         price: parseFloat(document.getElementById('precio').value),
-                        category: document.getElementById('categoria').value,
+                        categories: selectedCategories,
                         coverUrl: document.getElementById('urlPortada').value,
                         filePath: document.getElementById('filePath').value,
                         sellerEmail: user.email,
@@ -174,6 +224,12 @@
                     });
                     alert('¡Libro enviado para revisión!');
                     document.getElementById('publishForm').reset();
+                    // Reset checkbox visuals
+                    document.querySelectorAll('#categoriesContainer label').forEach(lbl => {
+                        lbl.style.background = 'var(--surface)';
+                        lbl.style.color = '';
+                        lbl.style.borderColor = 'rgba(255,255,255,0.08)';
+                    });
                     document.getElementById('autor').value = user.fullName;
                     document.getElementById('nav-mybooks').click();
                 } catch (error) {
@@ -193,6 +249,8 @@
                 grid.innerHTML = '';
                 books.forEach(book => {
                     const statusColor = book.status === 'APROBADO' ? 'var(--primary)' : book.status === 'RECHAZADO' ? 'var(--danger)' : '#f0ad4e';
+                    const categories = book.categories && book.categories.length > 0 ? book.categories : [];
+                    const tagsHtml = categories.map(c => `<span style="display:inline-block; background:rgba(0,212,255,0.12); color:var(--primary); font-size:0.72rem; padding:0.2rem 0.55rem; border-radius:20px; border:1px solid rgba(0,212,255,0.25);">${c}</span>`).join(' ');
                     const card = document.createElement('div');
                     card.className = 'book-card';
                     card.innerHTML = `
@@ -202,6 +260,7 @@
                         <div class="book-info">
                             <h3 class="book-title">${book.title}</h3>
                             <p class="book-author">$${book.price.toFixed(2)}</p>
+                            ${tagsHtml ? `<div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:0.4rem;">${tagsHtml}</div>` : ''}
                             <span style="color:${statusColor}; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">● ${book.status}</span>
                             <button class="btn btn-danger mt-1" style="font-size:0.8rem;" onclick="deleteBook('${book.id}')">Eliminar</button>
                         </div>

@@ -1,7 +1,6 @@
 async function loadCart() {
     const user = api.auth.getCurrentUser();
     const cartContent = document.getElementById('cartContent');
-    const checkoutPanel = document.getElementById('checkoutPanel');
     const cartCount = document.getElementById('cartCount');
 
     try {
@@ -10,7 +9,6 @@ async function loadCart() {
         
         if (!cart || !cart.items || cart.items.length === 0) {
             cartContent.innerHTML = '<p>Tu carrito está vacío.</p>';
-            checkoutPanel.style.display = 'none';
             if (cartCount) cartCount.textContent = '(0)';
             return;
         }
@@ -35,7 +33,7 @@ async function loadCart() {
             <div style="text-align:right; margin-top:1.5rem; font-size:1.2rem;">
                 Total a Pagar: <span style="color:var(--primary); font-weight:bold; font-size:1.5rem;">$${total.toFixed(2)}</span>
             </div>
-            <button class="btn btn-primary btn-large mt-1" style="width:100%" onclick="document.getElementById('checkoutPanel').style.display='block'">Proceder al Pago</button>
+            <button class="btn btn-primary btn-large mt-1" style="width:100%" onclick="processCheckout()">Confirmar Compra</button>
         </div>`;
 
         cartContent.innerHTML = html;
@@ -57,25 +55,19 @@ async function removeFromCart(libroId) {
 
 async function processCheckout() {
     const user = api.auth.getCurrentUser();
+    if (!confirm('¿Confirmar la compra de todos los libros en tu carrito?')) return;
     try {
-        // 1. Guardar dirección
-        const calle = document.getElementById('chkCalle').value;
-        const ciudad = document.getElementById('chkCiudad').value;
-        const pais = document.getElementById('chkPais').value;
-        
-        await api.post(`/checkout/${user.id}/address`, { calle, ciudad, departamento: ciudad, pais });
-        
-        // 2. Guardar método pago (Simulado)
+        // Enviar datos dummy para cumplir con el proceso de checkout en el backend
+        await api.post(`/checkout/${user.id}/address`, { calle: 'N/A', ciudad: 'N/A', departamento: 'N/A', pais: 'N/A' });
         await api.post(`/checkout/${user.id}/payment`, { metodo: 'TARJETA_CREDITO' });
-
-        // 3. Confirmar Orden
-        await api.post(`/checkout/${user.id}/confirm`);
-
-        alert("¡Compra realizada con éxito! Revisa tu biblioteca.");
-        document.getElementById('nav-library').click(); // Ir a biblioteca
         
+        // Confirmar la orden
+        await api.post(`/checkout/${user.id}/confirm`);
+        alert('¡Compra realizada con éxito! Los libros ya están en tu biblioteca.');
+        loadCart();
+        document.getElementById('nav-library').click();
     } catch (error) {
-        alert("Error en el checkout: " + error.message);
+        alert('Error en el pago: ' + error.message);
     }
 }
 
@@ -103,9 +95,12 @@ async function loadLibrary() {
                     <span style="font-size:3rem; color:var(--primary)">📖</span>
                 </div>
                 <div class="book-info">
-                    <h3 class="book-title">${libro.title}</h3>
-                    <p class="book-author">${libro.author}</p>
-                    <button class="btn btn-primary mt-1" onclick="downloadBook('${libro.id}', '${libro.filePath || ''}')">Descargar Seguro</button>
+                    <h3 class="book-title">${libro.titulo || libro.title}</h3>
+                    <p class="book-author">${libro.autor || libro.author}</p>
+                    <div class="flex gap-1 mt-1">
+                        <button class="btn btn-primary" style="flex:1" onclick="downloadBook('${libro.libroId || libro.id}', '')">⬇ Descargar</button>
+                        <button class="btn btn-outline" style="flex:1" onclick="openLibraryReviewModal('${libro.libroId || libro.id}', '${(libro.titulo || libro.title || '').replace(/'/g, "\\'")}')">✍ Reseñar</button>
+                    </div>
                 </div>
             `;
             libraryGrid.appendChild(card);
@@ -117,23 +112,20 @@ async function loadLibrary() {
 }
 
 async function downloadBook(libroId, filePath) {
-    if (filePath) {
-        alert("Iniciando descarga desde tu biblioteca...");
+    // Si ya tenemos el filePath, abrirlo directamente
+    if (filePath && filePath.trim() !== '') {
         window.open(filePath, '_blank');
         return;
     }
-    
-    // Fallback if no real file path
-    const user = api.auth.getCurrentUser();
+    // Si no, obtener el libro del backend y abrir su filePath
     try {
-        // Generar enlace
-        const response = await api.post(`/downloads/generate`, { buyerId: user.id, libroId: libroId });
-        const token = response.token;
-        
-        // Ejecutar descarga
-        const downloadResp = await api.get(`/downloads/${token}`);
-        alert("¡Descarga iniciada de forma segura!\nEnlace temporal: " + downloadResp.url);
+        const book = await api.get(`/books/${libroId}`);
+        if (book && book.filePath && book.filePath.trim() !== '') {
+            window.open(book.filePath, '_blank');
+        } else {
+            alert('Este libro no tiene un archivo de descarga disponible.');
+        }
     } catch (error) {
-        alert("Error al descargar: " + error.message);
+        alert('Error al obtener el enlace de descarga: ' + error.message);
     }
 }

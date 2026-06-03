@@ -58,4 +58,17 @@ public class ReviewController {
     public List<Review> getReported() {
         return reviewService.getReportedReviews();
     }
+
+    // Admin: Todas las reseñas
+    @GetMapping
+    public List<Review> getAll() {
+        return reviewService.getAllReviews();
+    }
+
+    // Admin: Eliminar reseña definitivamente
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        reviewService.deleteReview(id);
+        return ResponseEntity.noContent().build();
+    }
 }

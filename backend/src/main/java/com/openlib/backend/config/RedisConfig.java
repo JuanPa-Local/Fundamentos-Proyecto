@@ -6,18 +6,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 public class RedisConfig {
+
+    private final ObjectMapper objectMapper;
+
+    public RedisConfig() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
 
     @Bean
     public RedisTemplate<String, Carrito> redisCarritoTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Carrito> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Carrito.class));
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(this.objectMapper));
         return template;
     }
 
@@ -26,7 +36,7 @@ public class RedisConfig {
         RedisTemplate<String, SesionCheckout> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(SesionCheckout.class));
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(this.objectMapper));
         return template;
     }
 }

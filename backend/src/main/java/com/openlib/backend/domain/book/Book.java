@@ -34,7 +34,11 @@ public class Book {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private String category;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "book_categories", joinColumns = @JoinColumn(name = "book_id"))
+    @Column(name = "category_name")
+    @Builder.Default
+    private java.util.List<String> categories = new java.util.ArrayList<>();
 
     private String filePath;
 
@@ -85,8 +89,8 @@ public class Book {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public java.util.List<String> getCategories() { return categories; }
+    public void setCategories(java.util.List<String> categories) { this.categories = categories; }
 
     public String getFilePath() { return filePath; }
     public void setFilePath(String filePath) { this.filePath = filePath; }

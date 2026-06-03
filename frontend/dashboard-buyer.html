@@ -36,34 +36,6 @@
                 <button id="searchBtn" class="btn btn-primary">Buscar</button>
             </div>
             <div id="booksGrid" class="books-grid mt-2"></div>
-            
-            <!-- Modal para detalles del libro -->
-            <div id="bookModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding: 2rem;">
-                <div class="modal-content" style="background:var(--surface); padding:2rem; border-radius:12px; width:100%; max-width:800px; max-height:90vh; overflow-y:auto; position:relative;">
-                    <button id="closeModalBtn" class="btn btn-danger" style="position:absolute; top:1rem; right:1rem;">X</button>
-                    <div id="bookModalContent"></div>
-                    
-                    <hr style="border-color: var(--surface-light); margin: 2rem 0;">
-                    
-                    <div id="reviewsSection">
-                        <h3>Reseñas</h3>
-                        <div id="reviewsList" style="margin-bottom: 1rem;"></div>
-                        
-                        <div class="auth-card" style="padding: 1.5rem; background: var(--background);">
-                            <h4>Deja tu reseña</h4>
-                            <div class="form-group">
-                                <label>Calificación (1-5)</label>
-                                <input type="number" id="reviewRating" min="1" max="5" value="5">
-                            </div>
-                            <div class="form-group">
-                                <label>Comentario</label>
-                                <textarea id="reviewComment" rows="3" style="width:100%; padding: 0.8rem; border-radius:8px; border:1px solid var(--surface-light); background:var(--surface); color:var(--text);"></textarea>
-                            </div>
-                            <button id="submitReviewBtn" class="btn btn-primary">Enviar Reseña</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
 
         <!-- Vista Carrito -->
@@ -71,26 +43,38 @@
             <div id="cartContent">
                 <!-- Se llena por JS -->
             </div>
-            <div id="checkoutPanel" style="display:none; margin-top:2rem; padding: 2rem; background: var(--surface); border-radius:12px; border: 1px solid var(--primary);">
-                <h3>Checkout Segura</h3>
-                <div class="flex gap-1 mt-1">
-                    <div class="form-group" style="flex:1;">
-                        <label>País</label><input type="text" id="chkPais" value="Colombia">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Ciudad</label><input type="text" id="chkCiudad" value="Bogota">
-                    </div>
-                </div>
-                <div class="form-group mt-1">
-                    <label>Dirección</label><input type="text" id="chkCalle" value="Calle 123">
-                </div>
-                <button class="btn btn-primary mt-1" onclick="processCheckout()">Confirmar Pago y Comprar</button>
-            </div>
         </section>
 
         <!-- Vista Biblioteca -->
         <section id="view-library" class="view-section" style="display: none;">
             <div id="libraryGrid" class="books-grid"></div>
+
+            <!-- Modal de reseñas para libros de la biblioteca -->
+            <div id="libraryModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1001; align-items:center; justify-content:center; padding:2rem;">
+                <div style="background:var(--surface); padding:2rem; border-radius:12px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; position:relative;">
+                    <button onclick="document.getElementById('libraryModal').style.display='none'" class="btn btn-danger" style="position:absolute; top:1rem; right:1rem;">X</button>
+                    <div id="libraryModalContent"></div>
+                    <hr style="border-color:var(--surface-light); margin:1.5rem 0;">
+                    <h3 style="margin-bottom:1rem;">Dejar una Reseña</h3>
+                    <div id="libraryReviewsDisplay" style="margin-bottom:1.5rem;"></div>
+                    <div class="form-group">
+                        <label>Calificación</label>
+                        <select id="libraryReviewRating" class="btn btn-outline" style="width:100%;">
+                            <option value="5">★★★★★ Excelente</option>
+                            <option value="4">★★★★☆ Muy bueno</option>
+                            <option value="3">★★★☆☆ Bueno</option>
+                            <option value="2">★★☆☆☆ Regular</option>
+                            <option value="1">★☆☆☆☆ Malo</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-1">
+                        <label>Comentario</label>
+                        <textarea id="libraryReviewComment" rows="3" style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--surface-light); background:var(--surface); color:var(--text);"></textarea>
+                    </div>
+                    <button class="btn btn-primary mt-1" style="width:100%;" onclick="submitLibraryReview()">Enviar Reseña</button>
+                    <div id="libraryReviewMsg" style="margin-top:0.5rem;"></div>
+                </div>
+            </div>
         </section>
 
         <!-- Vista Favoritos -->
@@ -125,6 +109,14 @@
                 </form>
             </div>
         </section>
+        <!-- Modal para detalles del libro (Catálogo y Favoritos) -->
+        <div id="bookModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding: 2rem;">
+            <div class="modal-content" style="background:var(--surface); padding:2rem; border-radius:12px; width:100%; max-width:800px; max-height:90vh; overflow-y:auto; position:relative;">
+                <button id="closeModalBtn" class="btn btn-danger" style="position:absolute; top:1rem; right:1rem;">X</button>
+                <div id="bookModalContent"></div>
+            </div>
+        </div>
+
     </main>
 
     <script src="js/api.js"></script>

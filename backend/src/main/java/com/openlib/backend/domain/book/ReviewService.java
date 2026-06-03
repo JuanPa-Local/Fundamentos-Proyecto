@@ -98,4 +98,16 @@ public class ReviewService {
     public List<Review> getReportedReviews() {
         return reviewRepository.findByStatus("REPORTADA");
     }
+
+    // Admin: Todas las reseñas
+    @Transactional(readOnly = true)
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAll();
+    }
+
+    // Admin: Eliminar reseña definitivamente
+    @Transactional
+    public void deleteReview(UUID reviewId) {
+        reviewRepository.deleteById(reviewId);
+    }
 }

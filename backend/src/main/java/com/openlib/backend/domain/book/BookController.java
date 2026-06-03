@@ -96,4 +96,11 @@ public class BookController {
     public List<Book> getPopular(@RequestParam(defaultValue = "10") int limit) {
         return bookService.getMostPopularBooks(limit);
     }
+
+    // Admin: Crear categoría
+    @PostMapping("/categories")
+    public ResponseEntity<Category> createCategory(@RequestBody Map<String, String> body) {
+        Category category = bookService.createCategory(body.get("name"));
+        return ResponseEntity.ok(category);
+    }
 }

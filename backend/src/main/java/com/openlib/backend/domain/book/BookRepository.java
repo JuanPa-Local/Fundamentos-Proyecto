@@ -13,7 +13,7 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
     List<Book> findByTitleContainingIgnoreCase(String title);
     List<Book> findByAuthorContainingIgnoreCase(String author);
-    List<Book> findByCategory(String category);
+    List<Book> findByCategoriesContaining(String category);
     Optional<Book> findByIsbn(String isbn);
 
     // US-009: Libros por vendedor
@@ -27,17 +27,18 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
     List<Book> searchByTermino(@Param("termino") String termino);
 
     // US-011: Búsqueda con filtro de categoría adicional
-    @Query("SELECT b FROM Book b WHERE b.category = :category AND (" +
+    @Query("SELECT b FROM Book b WHERE :category MEMBER OF b.categories AND (" +
            "LOWER(b.title) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
            "LOWER(b.author) LIKE LOWER(CONCAT('%', :termino, '%')) OR " +
            "b.isbn LIKE CONCAT('%', :termino, '%'))")
     List<Book> searchByTerminoAndCategory(@Param("termino") String termino, @Param("category") String category);
 
     // US-011: Filtrar solo por categoría
-    List<Book> findByCategoryAndStatus(String category, String status);
+    @Query("SELECT b FROM Book b WHERE :category MEMBER OF b.categories AND b.status = :status")
+    List<Book> findByCategoryAndStatus(@Param("category") String category, @Param("status") String status);
 
     // US-013: Categorías distintas
-    @Query("SELECT DISTINCT b.category FROM Book b WHERE b.category IS NOT NULL ORDER BY b.category")
+    @Query("SELECT DISTINCT c FROM Book b JOIN b.categories c ORDER BY c")
     List<String> findDistinctCategories();
 
     // US-014: Filtrar por estado (PENDIENTE, APROBADO, RECHAZADO)
@@ -50,16 +51,16 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
     List<Book> findMostPopular(@Param("limit") int limit);
 
     // US-023: Categorías de un conjunto de libros
-    @Query("SELECT DISTINCT b.category FROM Book b WHERE b.id IN :ids AND b.category IS NOT NULL")
+    @Query("SELECT DISTINCT c FROM Book b JOIN b.categories c WHERE b.id IN :ids")
     List<String> findDistinctCategoriesByIds(@Param("ids") List<UUID> ids);
 
     // US-023: Recomendaciones por categorías excluyendo libros ya adquiridos
-    @Query(value = "SELECT * FROM books WHERE status = 'APROBADO' AND category IN :categories " +
-                   "AND id NOT IN :excludeIds ORDER BY download_count DESC LIMIT :limit",
-           nativeQuery = true)
+    @Query("SELECT DISTINCT b FROM Book b JOIN b.categories c WHERE b.status = 'APROBADO' " +
+           "AND c IN :categories AND b.id NOT IN :excludeIds " +
+           "ORDER BY b.downloadCount DESC")
     List<Book> findByCategoriesExcluding(@Param("categories") List<String> categories,
                                          @Param("excludeIds") List<UUID> excludeIds,
-                                         @Param("limit") int limit);
+                                         org.springframework.data.domain.Pageable pageable);
 
     // US-024: Libros por calificación
     @Query("SELECT b FROM Book b WHERE b.status = 'APROBADO' ORDER BY b.averageRating DESC")

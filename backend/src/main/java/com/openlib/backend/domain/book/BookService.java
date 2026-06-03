@@ -10,9 +10,11 @@ import java.util.UUID;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public List<Book> getAllBooks() {
@@ -43,7 +45,7 @@ public class BookService {
         existing.setAuthor(updatedBook.getAuthor());
         existing.setIsbn(updatedBook.getIsbn());
         existing.setDescription(updatedBook.getDescription());
-        existing.setCategory(updatedBook.getCategory());
+        existing.setCategories(updatedBook.getCategories());
         existing.setCoverUrl(updatedBook.getCoverUrl());
         existing.setPrice(updatedBook.getPrice());
         return bookRepository.save(existing);
@@ -98,7 +100,18 @@ public class BookService {
 
     // US-013: Obtener todas las categorías distintas
     public List<String> getAllCategories() {
-        return bookRepository.findDistinctCategories();
+        return categoryRepository.findAll().stream()
+                .map(Category::getName)
+                .toList();
+    }
+
+    public Category createCategory(String name) {
+        if (categoryRepository.existsByName(name)) {
+            throw new IllegalArgumentException("La categoría ya existe");
+        }
+        Category category = new Category();
+        category.setName(name);
+        return categoryRepository.save(category);
     }
 
     // US-014: Listar libros según su estado (PENDIENTE, APROBADO, RECHAZADO)
@@ -132,6 +145,11 @@ public class BookService {
 
     // US-023: Obtener recomendaciones por categorías excluyendo libros ya adquiridos
     public List<Book> getRecommendations(List<String> categories, List<UUID> excludeIds, int limit) {
-        return bookRepository.findByCategoriesExcluding(categories, excludeIds, limit);
+        if (categories == null || categories.isEmpty()) return new java.util.ArrayList<>();
+        return bookRepository.findByCategoriesExcluding(
+            categories,
+            excludeIds == null || excludeIds.isEmpty() ? List.of(UUID.randomUUID()) : excludeIds,
+            org.springframework.data.domain.PageRequest.of(0, limit)
+        );
     }
 }

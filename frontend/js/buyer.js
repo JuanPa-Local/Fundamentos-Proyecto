@@ -125,16 +125,20 @@ async function loadFavorites() {
 
         grid.innerHTML = '';
         favorites.forEach(fav => {
+            const bookId = fav.book ? fav.book.id : fav.bookId;
+            const bookTitle = fav.book ? fav.book.title : 'Libro Favorito';
+            const bookCover = fav.book ? fav.book.coverUrl : '';
+            
             const card = document.createElement('div');
             card.className = 'book-card';
             card.innerHTML = `
-                <div style="background:var(--surface-light); height:220px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="openBookDetails('${fav.bookId}')">
-                    <span style="font-size:3rem">📚</span>
+                <div style="background:var(--surface-light); height:220px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="openBookDetails('${bookId}')">
+                    ${bookCover ? `<img src="${bookCover}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:3rem">📚</span>`}
                 </div>
                 <div class="book-info">
-                    <h3 class="book-title" style="cursor:pointer;" onclick="openBookDetails('${fav.bookId}')">Libro Favorito</h3>
+                    <h3 class="book-title" style="cursor:pointer;" onclick="openBookDetails('${bookId}')">${bookTitle}</h3>
                     <p style="font-size:0.8rem; color:var(--text-muted);">Haz clic para ver detalles</p>
-                    <button class="btn btn-outline mt-1" style="width:100%; border-color:var(--danger); color:var(--danger);" onclick="toggleFavorite('${fav.bookId}', true)">Quitar de Favoritos</button>
+                    <button class="btn btn-outline mt-1" style="width:100%; border-color:var(--danger); color:var(--danger);" onclick="toggleFavorite('${bookId}', true)">Quitar de Favoritos</button>
                 </div>
             `;
             // Como el backend de Favoritos tal vez no devuelve la info completa del libro en el endpoint listar, 
@@ -172,83 +176,88 @@ async function toggleFavorite(bookId, reloadFavView = false) {
     }
 }
 
-// --- Lógica del Modal de Detalles del Libro ---
 
-async function openBookDetails(bookId) {
-    const modal = document.getElementById('bookModal');
-    const content = document.getElementById('bookModalContent');
-    if (!modal || !content) return;
+// --- Modal de Reseñas desde la Biblioteca ---
+
+let _currentLibraryBookId = null;
+
+async function openLibraryReviewModal(bookId, title) {
+    _currentLibraryBookId = bookId;
+    const modal = document.getElementById('libraryModal');
+    const contentDiv = document.getElementById('libraryModalContent');
+    const reviewsDiv = document.getElementById('libraryReviewsDisplay');
+    const msgDiv = document.getElementById('libraryReviewMsg');
     
-    modal.dataset.bookId = bookId;
-    content.innerHTML = '<p>Cargando detalles...</p>';
-    modal.style.display = 'flex';
-    
-    try {
-        const book = await api.get(`/books/${bookId}`);
-        const user = api.auth.getCurrentUser();
-        let isFav = false;
-        if (user && user.role === 'BUYER') {
-            const favRes = await api.get(`/favorites/check?userId=${user.id}&bookId=${bookId}`);
-            isFav = favRes.isFavorite;
-        }
-        
-        content.innerHTML = `
-            <div class="flex gap-2" style="flex-wrap:wrap;">
-                <div style="flex:1; min-width:200px;">
-                    <img src="${book.coverUrl || 'https://via.placeholder.com/220x300?text=Sin+Portada'}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/220x300?text=Sin+Portada'">
-                </div>
-                <div style="flex:2; min-width:300px;">
-                    <h2 style="margin-bottom:0.5rem; color:var(--primary); font-size:2rem;">${book.title}</h2>
-                    <p style="font-size:1.2rem; margin-bottom:1rem; color:var(--text-muted);">${book.author}</p>
-                    <p style="font-size:1.1rem; line-height:1.6; margin-bottom:1.5rem;">${book.description || 'Sin descripción disponible.'}</p>
-                    <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1.5rem;">$${book.price.toFixed(2)}</div>
-                    
-                    <div class="flex gap-1">
-                        <button class="btn btn-primary" style="flex:1;" onclick="addToCart('${book.id}')">🛒 Agregar al Carrito</button>
-                        ${user && user.role === 'BUYER' ? `
-                            <button class="btn btn-outline" style="flex:1; ${isFav ? 'background:var(--primary); color:white; border-color:var(--primary);' : ''}" onclick="toggleFavorite('${book.id}')">
-                                ${isFav ? '♥ En Favoritos' : '♡ Agregar a Favoritos'}
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        loadReviews(bookId);
-    } catch (error) {
-        content.innerHTML = `<p class="error-message" style="display:block">Error cargando detalles del libro: ${error.message}</p>`;
+    if (!modal) return;
+
+    // Mostrar título del libro
+    if (contentDiv) {
+        contentDiv.innerHTML = `<h2 style="color:var(--primary); margin-bottom:0.5rem;">${title}</h2><p style="color:var(--text-muted);">Escribe tu reseña sobre este libro.</p>`;
     }
+    
+    // Limpiar formulario
+    const comment = document.getElementById('libraryReviewComment');
+    const rating = document.getElementById('libraryReviewRating');
+    if (comment) comment.value = '';
+    if (rating) rating.value = '5';
+    if (msgDiv) msgDiv.textContent = '';
+    
+    // Mostrar reseñas existentes
+    if (reviewsDiv) {
+        reviewsDiv.innerHTML = '<p style="color:var(--text-muted);">Cargando reseñas...</p>';
+        try {
+            const reviews = await api.get(`/reviews/book/${bookId}`);
+            if (!reviews || reviews.length === 0) {
+                reviewsDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">Aún no hay reseñas para este libro. ¡Sé el primero!</p>';
+            } else {
+                let html = '<div style="display:flex; flex-direction:column; gap:0.75rem;">';
+                reviews.forEach(rev => {
+                    let stars = '';
+                    for(let i=0;i<5;i++) stars += i < rev.rating ? '★' : '☆';
+                    html += `
+                        <div style="background:var(--surface-light); padding:0.75rem; border-radius:8px; border-left:3px solid var(--primary);">
+                            <div style="display:flex; justify-content:space-between;">
+                                <strong>${rev.user && rev.user.fullName ? rev.user.fullName : 'Usuario'}</strong>
+                                <span style="color:gold;">${stars}</span>
+                            </div>
+                            <p style="margin-top:0.3rem; color:var(--text-muted); font-size:0.9rem;">${rev.comment || ''}</p>
+                        </div>`;
+                });
+                html += '</div>';
+                reviewsDiv.innerHTML = html;
+            }
+        } catch (e) {
+            reviewsDiv.innerHTML = '';
+        }
+    }
+    
+    modal.style.display = 'flex';
 }
 
-async function loadReviews(bookId) {
-    const list = document.getElementById('reviewsList');
-    if (!list) return;
+async function submitLibraryReview() {
+    const user = api.auth.getCurrentUser();
+    const bookId = _currentLibraryBookId;
+    const rating = document.getElementById('libraryReviewRating').value;
+    const comment = document.getElementById('libraryReviewComment').value;
+    const msgDiv = document.getElementById('libraryReviewMsg');
+    
+    if (!bookId || !user) return;
+    if (!comment.trim()) { msgDiv.textContent = 'Escribe un comentario antes de enviar.'; msgDiv.style.color = 'var(--danger)'; return; }
     
     try {
-        list.innerHTML = '<p>Cargando reseñas...</p>';
-        const reviews = await api.get(`/reviews/book/${bookId}`);
-        if (!reviews || reviews.length === 0) {
-            list.innerHTML = '<p style="color:var(--text-muted);">Sé el primero en dejar una reseña para este libro.</p>';
-            return;
-        }
-        
-        let html = '';
-        reviews.forEach(rev => {
-            let stars = '';
-            for(let i=0; i<5; i++) { stars += i < rev.rating ? '★' : '☆'; }
-            html += `
-                <div style="background:var(--background); padding:1rem; border-radius:8px; margin-bottom:1rem; border-left:4px solid var(--primary);">
-                    <div class="flex space-between">
-                        <strong>Usuario #${rev.userId ? rev.userId.substring(0,6) : 'N/A'}</strong>
-                        <span style="color:gold;">${stars}</span>
-                    </div>
-                    <p style="margin-top:0.5rem; color:var(--text-muted);">${rev.comment || ''}</p>
-                </div>
-            `;
+        await api.post('/reviews', {
+            userId: user.id,
+            bookId: bookId,
+            rating: rating.toString(),
+            comment: comment.trim()
         });
-        list.innerHTML = html;
+        msgDiv.textContent = '✅ Reseña enviada con éxito. Gracias por tu opinión.';
+        msgDiv.style.color = 'var(--primary)';
+        document.getElementById('libraryReviewComment').value = '';
+        // Recargar reseñas en el modal
+        openLibraryReviewModal(bookId, document.getElementById('libraryModalContent').querySelector('h2')?.textContent || '');
     } catch (error) {
-        list.innerHTML = `<p class="error-message">Error cargando reseñas.</p>`;
+        msgDiv.textContent = '❌ ' + (error.message.includes('Ya has reseñado') ? 'Ya dejaste una reseña para este libro.' : error.message);
+        msgDiv.style.color = 'var(--danger)';
     }
 }

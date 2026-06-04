@@ -21,4 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     // US-026: Estadísticas de ventas por seller
     List<Order> findByBookSellerEmail(String sellerEmail);
+
+    // Para desvincular órdenes al eliminar un libro
+    List<Order> findByBookId(UUID bookId);
 }

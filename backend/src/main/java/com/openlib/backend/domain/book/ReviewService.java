@@ -110,4 +110,10 @@ public class ReviewService {
     public void deleteReview(UUID reviewId) {
         reviewRepository.deleteById(reviewId);
     }
+
+    // Verificar si un usuario ya reseñó un libro
+    @Transactional(readOnly = true)
+    public boolean hasUserReviewedBook(UUID userId, UUID bookId) {
+        return reviewRepository.existsByUserIdAndBookId(userId, bookId);
+    }
 }

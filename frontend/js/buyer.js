@@ -92,6 +92,7 @@ async function loadOrders() {
 
         let html = '<div style="display:flex; flex-direction:column; gap:1rem;">';
         orders.forEach(order => {
+            const bookTitle = order.book ? order.book.title : 'Libro desconocido';
             html += `
                 <div style="background:var(--surface); padding:1.5rem; border-radius:8px; border:1px solid var(--surface-light);">
                     <div class="flex space-between" style="align-items:center; margin-bottom: 1rem;">
@@ -100,6 +101,9 @@ async function loadOrders() {
                             <span style="color:var(--text-muted); margin-left:1rem;">${order.fecha || 'Reciente'}</span>
                         </div>
                         <span style="color:var(--primary); font-weight:bold; font-size: 1.2rem;">$${(order.totalPrice || 0).toFixed(2)}</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem; font-size: 1.05rem; color:var(--text);">
+                        📖 <strong>Libro:</strong> ${bookTitle}
                     </div>
                     <p style="font-size:0.9rem; color:var(--text-muted);">Estado: ${order.status || 'COMPLETADA'}</p>
                 </div>`;
@@ -256,6 +260,10 @@ async function submitLibraryReview() {
         document.getElementById('libraryReviewComment').value = '';
         // Recargar reseñas en el modal
         openLibraryReviewModal(bookId, document.getElementById('libraryModalContent').querySelector('h2')?.textContent || '');
+        // Refrescar librería para ocultar el botón de reseñar y poner "✔ Reseñado"
+        if (typeof loadLibrary === 'function') {
+            loadLibrary();
+        }
     } catch (error) {
         msgDiv.textContent = '❌ ' + (error.message.includes('Ya has reseñado') ? 'Ya dejaste una reseña para este libro.' : error.message);
         msgDiv.style.color = 'var(--danger)';

@@ -218,14 +218,19 @@ async function loadReviews(bookId) {
         }
         
         let html = '';
+        const currentUser = api.auth.getCurrentUser();
         reviews.forEach(rev => {
             let stars = '';
             for(let i=0; i<5; i++) { stars += i < rev.rating ? '★' : '☆'; }
+            const showReport = currentUser && currentUser.role === 'BUYER' && rev.user && rev.user.id !== currentUser.id;
             html += `
                 <div style="background:var(--background); padding:1rem; border-radius:8px; margin-bottom:1rem; border-left:4px solid var(--primary);">
                     <div class="flex space-between">
                         <strong>${rev.user && rev.user.fullName ? rev.user.fullName : 'Usuario'}</strong>
-                        <span style="color:gold;">${stars}</span>
+                        <div>
+                            <span style="color:gold;">${stars}</span>
+                            ${showReport ? `<button class="btn btn-outline" style="font-size:0.7rem; padding:0.2rem 0.5rem; border-color:var(--danger); color:var(--danger); margin-left:1rem;" onclick="reportReview('${rev.id}')">Reportar</button>` : ''}
+                        </div>
                     </div>
                     <p style="margin-top:0.5rem; color:var(--text-muted);">${rev.comment || ''}</p>
                 </div>
@@ -234,5 +239,15 @@ async function loadReviews(bookId) {
         list.innerHTML = html;
     } catch (error) {
         list.innerHTML = `<p class="error-message">Error cargando reseñas.</p>`;
+    }
+}
+
+window.reportReview = async function(reviewId) {
+    if(!confirm("¿Deseas reportar esta reseña a los administradores?")) return;
+    try {
+        await api.post(`/reviews/${reviewId}/report`);
+        alert("Reseña reportada exitosamente. Un administrador la revisará.");
+    } catch(e) {
+        alert("Error al reportar la reseña: " + e.message);
     }
 }

@@ -210,7 +210,7 @@
                 orders.forEach(o => {
                     html += `<tr style="border-bottom:1px solid var(--surface-light);">
                         <td style="padding:0.8rem; font-family:monospace; font-size:0.85rem;">${o.id.substring(0, 8)}...</td>
-                        <td style="padding:0.8rem;">${o.userId ? o.userId.substring(0, 8) + '...' : 'N/A'}</td>
+                        <td style="padding:0.8rem;">${o.user ? o.user.fullName : 'N/A'}</td>
                         <td style="padding:0.8rem; color:var(--primary); font-weight:bold;">$${(o.totalPrice || 0).toFixed(2)}</td>
                         <td style="padding:0.8rem;">${o.status || 'COMPLETADA'}</td>
                     </tr>`;
@@ -270,7 +270,7 @@
                             ${isReported
                                 ? `<button class="btn btn-outline" style="font-size:0.8rem;" onclick="reactivateReview('${r.id}')">Reactivar</button>
                                    <button class="btn btn-danger" style="font-size:0.8rem;" onclick="deleteReview('${r.id}')">Eliminar</button>`
-                                : `<button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); font-size:0.8rem;" onclick="hideReview('${r.id}')">Reportar/Ocultar</button>`
+                                : `<button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); font-size:0.8rem;" onclick="reportReview('${r.id}')">Reportar</button>`
                             }
                         </div>
                     </div>`;
@@ -281,6 +281,10 @@
 
         async function hideReview(id) {
             try { await api.post(`/reviews/${id}/hide`); switchReviewTab(document.getElementById('tab-reported-reviews').classList.contains('active') ? 'reported' : 'all'); } catch (e) { alert(e.message); }
+        }
+
+        async function reportReview(id) {
+            try { await api.post(`/reviews/${id}/report`); switchReviewTab('reported'); } catch (e) { alert(e.message); }
         }
 
         async function reactivateReview(id) {

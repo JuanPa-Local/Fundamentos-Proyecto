@@ -143,8 +143,10 @@ public class Book {
 
     // US-024: Actualizar calificación promedio al recibir una nueva reseña
     public void actualizarCalificacion(double nuevaCalificacion) {
-        double totalActual = this.averageRating * this.reviewCount;
-        this.reviewCount++;
+        double currentRating = this.averageRating != null ? this.averageRating : 0.0;
+        int currentCount = this.reviewCount != null ? this.reviewCount : 0;
+        double totalActual = currentRating * currentCount;
+        this.reviewCount = currentCount + 1;
         this.averageRating = (totalActual + nuevaCalificacion) / this.reviewCount;
     }
 

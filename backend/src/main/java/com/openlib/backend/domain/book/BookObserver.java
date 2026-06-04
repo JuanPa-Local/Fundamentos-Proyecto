@@ -16,7 +16,8 @@ public class BookObserver {
     @EventListener
     public void onOrderCompleted(OrderCompletedEvent event) {
         Book book = event.getBook();
-        book.setDownloadCount(book.getDownloadCount() + 1);
+        int currentCount = book.getDownloadCount() != null ? book.getDownloadCount() : 0;
+        book.setDownloadCount(currentCount + 1);
         bookRepository.save(book);
         System.out.println("Libro descargado: " + book.getTitle() + " - Descargas totales: " + book.getDownloadCount());
     }

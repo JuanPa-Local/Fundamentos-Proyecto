@@ -20,10 +20,20 @@ public class OrderController {
 
     // US-018: Crear orden
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, String> body) {
+        String userIdStr = body.get("userId");
+        String bookIdStr = body.get("bookId");
+        if (bookIdStr == null && body.containsKey("libroId")) {
+            bookIdStr = body.get("libroId");
+        }
+        
+        if (userIdStr == null || bookIdStr == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Falta userId o bookId en la petición. Recibido: " + body));
+        }
+
         Order order = orderService.createOrder(
-                UUID.fromString(body.get("userId")),
-                UUID.fromString(body.get("bookId"))
+                UUID.fromString(userIdStr),
+                UUID.fromString(bookIdStr)
         );
         return ResponseEntity.ok(order);
     }

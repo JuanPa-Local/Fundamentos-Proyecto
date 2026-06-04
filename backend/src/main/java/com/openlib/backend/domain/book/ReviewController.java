@@ -71,4 +71,12 @@ public class ReviewController {
         reviewService.deleteReview(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Verificar si un usuario ya reseñó un libro
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Boolean>> checkUserReview(
+            @RequestParam UUID userId, @RequestParam UUID bookId) {
+        boolean hasReview = reviewService.hasUserReviewedBook(userId, bookId);
+        return ResponseEntity.ok(Map.of("hasReview", hasReview));
+    }
 }

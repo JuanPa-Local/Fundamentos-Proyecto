@@ -57,12 +57,27 @@ async function processCheckout() {
     const user = api.auth.getCurrentUser();
     if (!confirm('¿Confirmar la compra de todos los libros en tu carrito?')) return;
     try {
-        // Enviar datos dummy para cumplir con el proceso de checkout en el backend
-        await api.post(`/checkout/${user.id}/address`, { calle: 'N/A', ciudad: 'N/A', departamento: 'N/A', pais: 'N/A' });
-        await api.post(`/checkout/${user.id}/payment`, { metodo: 'TARJETA_CREDITO' });
-        
-        // Confirmar la orden
-        await api.post(`/checkout/${user.id}/confirm`);
+        // Obtener carrito actual
+        const cart = await api.get(`/cart/${user.id}`);
+        if (!cart || !cart.items || cart.items.length === 0) {
+            alert('Tu carrito está vacío.');
+            return;
+        }
+        // Crear una orden directa por cada libro en el carrito
+        for (const item of cart.items) {
+            const bookId = item.libroId || item.bookId || item.id;
+            try {
+                await api.post('/orders', { userId: user.id, bookId: bookId });
+            } catch(e) {
+                // Si el libro ya fue adquirido, ignorar ese error y continuar
+                if (!e.message || !e.message.includes('ya adquirido')) throw e;
+            }
+        }
+        // Vaciar carrito eliminando cada item
+        for (const item of cart.items) {
+            const bookId = item.libroId || item.bookId || item.id;
+            await api.delete(`/cart/${user.id}/items/${bookId}`);
+        }
         alert('¡Compra realizada con éxito! Los libros ya están en tu biblioteca.');
         loadCart();
         document.getElementById('nav-library').click();
@@ -85,26 +100,36 @@ async function loadLibrary() {
         }
 
         libraryGrid.innerHTML = '';
-        libraries.forEach(libro => {
+        for (const libro of libraries) {
+            const bookId = libro.libroId || libro.id;
+            const title = (libro.titulo || libro.title || '').replace(/'/g, "\\'");
+            const author = libro.autor || libro.author;
+            const coverUrl = libro.coverUrl;
+            
+            // Verificar si ya tiene una reseña en este libro
+            let yaReseno = false;
+            try {
+                const checkRes = await api.get(`/reviews/check?userId=${user.id}&bookId=${bookId}`);
+                yaReseno = checkRes && checkRes.hasReview;
+            } catch(e) { /* ignorar */ }
+            
             const card = document.createElement('div');
             card.className = 'book-card';
-            
-            // Reutilizando estilos de catalog.js
             card.innerHTML = `
                 <div style="background:var(--surface-light); height:200px; display:flex; align-items:center; justify-content:center;">
-                    <span style="font-size:3rem; color:var(--primary)">📖</span>
+                    ${coverUrl ? `<img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:3rem; color:var(--primary)">📖</span>`}
                 </div>
                 <div class="book-info">
                     <h3 class="book-title">${libro.titulo || libro.title}</h3>
-                    <p class="book-author">${libro.autor || libro.author}</p>
+                    <p class="book-author">${author}</p>
                     <div class="flex gap-1 mt-1">
-                        <button class="btn btn-primary" style="flex:1" onclick="downloadBook('${libro.libroId || libro.id}', '')">⬇ Descargar</button>
-                        <button class="btn btn-outline" style="flex:1" onclick="openLibraryReviewModal('${libro.libroId || libro.id}', '${(libro.titulo || libro.title || '').replace(/'/g, "\\'")}')">✍ Reseñar</button>
+                        <button class="btn btn-primary" style="flex:1" onclick="downloadBook('${bookId}', '')">⬇ Descargar</button>
+                        ${!yaReseno ? `<button class="btn btn-outline" style="flex:1" onclick="openLibraryReviewModal('${bookId}', '${title}')">✍ Reseñar</button>` : '<span style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:0.85rem; font-weight:600;">✔ Reseñado</span>'}
                     </div>
                 </div>
             `;
             libraryGrid.appendChild(card);
-        });
+        }
 
     } catch (error) {
         libraryGrid.innerHTML = `<p class="error-message" style="display:block">Error: ${error.message}</p>`;

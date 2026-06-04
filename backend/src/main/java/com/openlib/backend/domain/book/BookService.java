@@ -2,7 +2,10 @@ package com.openlib.backend.domain.book;
 
 import com.openlib.backend.domain.book.exception.IsbnDuplicadoException;
 import com.openlib.backend.domain.book.exception.LibroNoEncontradoException;
+import com.openlib.backend.domain.order.OrderRepository;
+import com.openlib.backend.domain.order.FavoriteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,10 +14,18 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
+    private final ReviewRepository reviewRepository;
+    private final OrderRepository orderRepository;
+    private final FavoriteRepository favoriteRepository;
 
-    public BookService(BookRepository bookRepository, CategoryRepository categoryRepository) {
+    public BookService(BookRepository bookRepository, CategoryRepository categoryRepository,
+                       ReviewRepository reviewRepository, OrderRepository orderRepository,
+                       FavoriteRepository favoriteRepository) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
+        this.reviewRepository = reviewRepository;
+        this.orderRepository = orderRepository;
+        this.favoriteRepository = favoriteRepository;
     }
 
     public List<Book> getAllBooks() {
@@ -51,7 +62,17 @@ public class BookService {
         return bookRepository.save(existing);
     }
 
+    @Transactional
     public void deleteBook(UUID id) {
+        // Eliminar favoritos del libro
+        favoriteRepository.deleteAll(favoriteRepository.findByBookId(id));
+        // Eliminar reseñas del libro
+        reviewRepository.deleteAll(reviewRepository.findByBookId(id));
+        // Desvincular órdenes que referencian este libro
+        orderRepository.findByBookId(id).forEach(order -> {
+            order.setBook(null);
+            orderRepository.save(order);
+        });
         bookRepository.deleteById(id);
     }
 

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
+@SuppressWarnings("deprecation")
 public class RedisConfig {
 
     private final ObjectMapper objectMapper;

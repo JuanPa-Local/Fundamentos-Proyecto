@@ -673,6 +673,54 @@ para mostrar a tu profesor:
    }
    (Retorna un token de un solo uso para descargar el libro).
 
+
+=========================================================
+10. CORRECCIONES RECIENTES Y APLICACIÓN DE PRINCIPIOS SOLID
+=========================================================
+
+Durante el último ciclo de desarrollo se detectaron y corrigieron problemas críticos en los flujos principales. Se detallan a continuación las rutas de los archivos, la lógica ejecutada y los patrones de diseño aplicados para cumplir con la Arquitectura Limpia (Clean Architecture) y SOLID:
+
+A. Flujo de Compra y Carrito (NullPointerExceptions)
+- Ubicación de la Lógica: 
+  - Frontend: `frontend/js/cart.js` (Método `processCheckout()`)
+  - Backend: `backend/src/main/java/com/openlib/backend/domain/order/OrderController.java` (Método `createOrder()`) y `ItemCarrito.java`.
+- Lógica de Ejecución: Al momento de confirmar la compra, el cliente itera sobre los elementos en Redis (`CarritoFacade`) y envía una petición POST por cada libro a `/api/orders`. El problema radicaba en que el objeto DTO `ItemCarrito` nombraba su atributo como `libroId`, pero el frontend intentaba inyectar un valor bajo un identificador equivocado al JSON, enviando un valor nulo al controlador.
+- Patrones y SOLID:
+  - Principio de Responsabilidad Única (SRP): Se programó defensivamente el controlador (`OrderController`) en la capa de presentación para que capture ausencias de atributos e identifique campos nulos en variables nativas (como `UUID.fromString`), respondiendo con un `400 Bad Request` semántico. La responsabilidad de la creación de la orden sigue fuertemente encapsulada en el servicio de negocio `OrderService.java`.
+  - Patrón Facade (Simulado): En el cliente (`cart.js`), se consolida la interacción de vaciar el carrito y crear órdenes de manera secuencial sin exponer esa complejidad al usuario final.
+
+B. Creación de Reseñas y Contadores Vacíos (NPE)
+- Ubicación de la Lógica:
+  - Backend: `backend/src/main/java/com/openlib/backend/domain/book/Book.java` (Método `actualizarCalificacion()`) y `BookObserver.java` (Método `onOrderCompleted()`).
+  - Frontend: `frontend/js/buyer.js` (Métodos `submitLibraryReview()` y `openLibraryReviewModal()`).
+- Lógica de Ejecución:
+  1. Reseñas: Un usuario envía un POST a `/api/reviews`. El `ReviewController` lo capta, transfiere el payload al `ReviewService` que guarda la reseña, recupera la entidad Libro y llama a `book.actualizarCalificacion(rating)`.
+  2. Programación Defensiva en el Modelo Rico (Rich Domain): Al procesar compras o reseñas en libros antiguos, las propiedades primitivas como `averageRating` o `downloadCount` estaban nulas en la base de datos (por falta de inicialización previa). Desempaquetarlas a tipos crudos (`Double`/`int`) disparaba excepciones `NullPointerException`. Se agregaron verificaciones `!= null` directamente dentro de las operaciones lógicas de `Book.java`, garantizando un estado interno válido (`fallback` a 0 o 0.0) antes de efectuar matemáticas.
+  3. Actualización de Interfaz Reactiva: En `buyer.js`, en cuanto la reseña tiene éxito vía POST, se manda a llamar a `loadLibrary()` dinámicamente. Esto manipula el DOM para eliminar el botón de 'Reseñar' en vivo e inyectar un indicador "✔ Reseñado", otorgando una experiencia fluida.
+- Patrones y SOLID:
+  - Patrón Observer (Event-Driven): Cuando se completa una compra en `OrderService`, no se invoca directamente al `BookService` (lo que generaría un altísimo y no deseado acoplamiento). En vez de ello, se emite un `OrderCompletedEvent`. `BookObserver` intercepta el evento e incrementa silenciosamente el contador de descargas del libro en cuestión.
+  - Principio Abierto/Cerrado (OCP): Dado el enfoque guiado por eventos, el flujo de compra principal está "abierto a extensiones, cerrado a modificaciones". Añadir notificaciones futuras (ej. correo post-compra) requerirá tan sólo agregar nuevos *Observers*, sin alterar `OrderService`.
+
+C. Eliminación de Libros (Restricciones Foreign Key en Vendedor)
+- Ubicación de la Lógica:
+  - Backend: `backend/src/main/java/com/openlib/backend/domain/book/BookService.java` (Método `deleteBook()`).
+  - Repositorios inyectados: `FavoriteRepository.java`, `ReviewRepository.java`, `OrderRepository.java`.
+- Lógica de Ejecución: Los vendedores (Rol `SELLER`) se topaban con un error "500 Internal Server Error" en producción al intentar usar el endpoint `DELETE /api/books/{id}`. La Base de Datos Relacional de Postgres bloqueaba la instrucción `bookRepository.deleteById(id)` porque el libro ya estaba presente como una Llave Foránea ("Foreign Key") activa en tablas transaccionales u opcionales (Reseñas, Favoritos, Órdenes Históricas).
+  Se corrigió orquestando un procedimiento de limpieza integral transaccional (etiquetado explícitamente con `@Transactional` en `BookService`):
+  1. Búsqueda y destrucción de favoritos huérfanos (`favoriteRepository.findByBookId(id)`).
+  2. Eliminación de reseñas asociadas (`reviewRepository.deleteAll(...)`).
+  3. Modificación del historial: Las compras no se destruyen para preservar la contabilidad y biblioteca del comprador, pero sí se nulifica el registro hacia el libro físico (`order.setBook(null)`).
+  4. La eliminación del objeto raíz se procesa exitosamente.
+- Patrones y SOLID:
+  - Principio de Inversión de Dependencias (DIP): Se refactorizó el `BookService` para inyectar por constructor al `FavoriteRepository`. El servicio de casos de uso nunca toca tecnología ni dialectos SQL directamente, dependiendo de abstracciones estables de alto nivel originadas en Spring Data.
+  - Segregación de Interfaces (ISP): Se respetó al crear métodos discretos y de firma explícita, tales como `findByBookId()`, sobre la interfaz general `FavoriteRepository`, ofreciendo gran modularidad.
+
+CONCLUSIÓN ARQUITECTÓNICA GLOBAL (CLEAN ARCHITECTURE)
+El proyecto demuestra apego y rigurosidad al patrón de Capas Centralizadas / Hexagonal:
+- Capa de Dominio (Entities): Las clases como `Book` no son simples "Data Bags" (Anemic Domain), sino entidades maduras con métodos (`actualizarCalificacion`) y control de invariantes que repelen inconsistencias.
+- Capa de Aplicación (Use Cases/Services): Gestores de transacción (`BookService`, `OrderService`, Observers y Facades) que se orquestan bajo una lógica limpia y desacoplada de la web.
+- Capa de Infraestructura y Presentación (Adapters): Controladores HTTP y Repositorios JPA Spring Boot, aislando a las librerías nativas del centro del sistema. El Frontend consume todo exclusivamente a través de la API Asincrónica (Fetch JSON / RESTFul) desde una naturaleza Single Page Application (SPA), garantizando máxima escalabilidad.
+
 =========================================================
       ¡El proyecto está listo para ser probado!
 =========================================================

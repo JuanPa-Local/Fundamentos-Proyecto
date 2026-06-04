@@ -27,7 +27,7 @@ public class RedisConfig {
         RedisTemplate<String, Carrito> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer<>(objectMapper, Carrito.class));
+        template.setValueSerializer(new CustomJsonRedisSerializer<>(this.objectMapper, Carrito.class));
         return template;
     }
 
@@ -36,7 +36,38 @@ public class RedisConfig {
         RedisTemplate<String, SesionCheckout> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer<>(objectMapper, SesionCheckout.class));
+        template.setValueSerializer(new CustomJsonRedisSerializer<>(this.objectMapper, SesionCheckout.class));
         return template;
+    }
+
+    // Serializador personalizado para evitar las advertencias de deprecación de Spring Data Redis 4.0
+    static class CustomJsonRedisSerializer<T> implements org.springframework.data.redis.serializer.RedisSerializer<T> {
+        private final ObjectMapper mapper;
+        private final Class<T> type;
+
+        public CustomJsonRedisSerializer(ObjectMapper mapper, Class<T> type) {
+            this.mapper = mapper;
+            this.type = type;
+        }
+
+        @Override
+        public byte[] serialize(T t) throws org.springframework.data.redis.serializer.SerializationException {
+            if (t == null) return new byte[0];
+            try {
+                return mapper.writeValueAsBytes(t);
+            } catch (Exception e) {
+                throw new org.springframework.data.redis.serializer.SerializationException("Error serializing", e);
+            }
+        }
+
+        @Override
+        public T deserialize(byte[] bytes) throws org.springframework.data.redis.serializer.SerializationException {
+            if (bytes == null || bytes.length == 0) return null;
+            try {
+                return mapper.readValue(bytes, type);
+            } catch (Exception e) {
+                throw new org.springframework.data.redis.serializer.SerializationException("Error deserializing", e);
+            }
+        }
     }
 }

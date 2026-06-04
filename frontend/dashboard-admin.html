@@ -259,7 +259,7 @@
                     <div style="background:var(--surface); padding:1.5rem; border-radius:8px; border:1px solid ${isReported ? 'var(--danger)' : 'var(--surface-light)'}; border-left:4px solid ${isReported ? 'var(--danger)' : 'var(--primary)'}">
                         <div class="flex space-between" style="margin-bottom: 0.5rem;">
                             <div>
-                                <strong style="color:var(--text)">${r.user && r.user.fullName ? r.user.fullName : 'Usuario'}</strong>
+                                <strong>${r.user && r.user.fullName ? r.user.fullName : 'Usuario'}</strong>
                                 <span style="color:gold; margin-left:0.5rem;">${stars}</span>
                                 ${isReported ? '<span style="background:var(--danger); color:white; font-size:0.75rem; padding:0.2rem 0.5rem; border-radius:4px; margin-left:0.5rem;">REPORTADA</span>' : ''}
                             </div>

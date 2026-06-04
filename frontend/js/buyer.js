@@ -102,7 +102,7 @@ async function loadOrders() {
                         </div>
                         <span style="color:var(--primary); font-weight:bold; font-size: 1.2rem;">$${(order.totalPrice || 0).toFixed(2)}</span>
                     </div>
-                    <div style="margin-bottom: 0.5rem; font-size: 1.05rem; color:var(--text);">
+                    <div style="margin-bottom: 0.5rem; font-size: 1.05rem; color:var(--text-main);">
                         📖 <strong>Libro:</strong> ${bookTitle}
                     </div>
                     <p style="font-size:0.9rem; color:var(--text-muted);">Estado: ${order.status || 'COMPLETADA'}</p>
